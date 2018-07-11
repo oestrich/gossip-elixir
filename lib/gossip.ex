@@ -7,9 +7,9 @@ defmodule Gossip do
 
   @type channel :: String.t()
 
-  @client_id Application.get_env(:gossip, :client_id)
+  def client_id(), do: Application.get_env(:gossip, :client_id)
 
-  def configured?(), do: @client_id != nil
+  def configured?(), do: client_id() != nil
 
   def start_socket(), do: Gossip.Supervisor.start_socket()
 

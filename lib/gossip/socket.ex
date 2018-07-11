@@ -9,10 +9,10 @@ defmodule Gossip.Socket do
 
   require Logger
 
-  @url Application.get_env(:gossip, :url)
-
   alias Gossip.Monitor
   alias Gossip.Socket.Implementation
+
+  def url(), do: Application.get_env(:gossip, :url)
 
   def start_link() do
     state = %{
@@ -20,7 +20,7 @@ defmodule Gossip.Socket do
       channels: [],
     }
 
-    WebSockex.start_link(@url, __MODULE__, state, [name: Gossip.Socket])
+    WebSockex.start_link(url(), __MODULE__, state, [name: Gossip.Socket])
   end
 
   def handle_connect(_conn, state) do
@@ -75,19 +75,19 @@ defmodule Gossip.Socket do
 
     require Logger
 
-    @client_id Application.get_env(:gossip, :client_id)
-    @client_secret Application.get_env(:gossip, :client_secret)
-    @callback_module Application.get_env(:gossip, :callback_module)
+    def client_id(), do: Application.get_env(:gossip, :client_id)
+    def client_secret(), do: Application.get_env(:gossip, :client_secret)
+    def callback_module(), do: Application.get_env(:gossip, :callback_module)
 
     def authorize(state) do
-      channels = @callback_module.channels()
+      channels = callback_module().channels()
 
       message = Poison.encode!(%{
         "event" => "authenticate",
         "payload" => %{
-          "client_id" => @client_id,
-          "client_secret" => @client_secret,
-          "user_agent" => @callback_module.user_agent(),
+          "client_id" => client_id(),
+          "client_secret" => client_secret(),
+          "user_agent" => callback_module().user_agent(),
           "supports" => ["channels"],
           "channels" => channels,
         },
@@ -156,7 +156,7 @@ defmodule Gossip.Socket do
       message = Poison.encode!(%{
         "event" => "heartbeat",
         "payload" => %{
-          "players" => @callback_module.players(),
+          "players" => callback_module().players(),
         },
       })
 
@@ -171,7 +171,7 @@ defmodule Gossip.Socket do
         message: payload["message"],
       }
 
-      @callback_module.message_broadcast(message)
+      callback_module().message_broadcast(message)
 
       {:ok, state}
     end
