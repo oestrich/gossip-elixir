@@ -5,6 +5,7 @@ defmodule Gossip.Client do
 
   @type user_agent :: String.t()
   @type channel_name :: String.t()
+  @type game_name :: String.t()
   @type player_name :: String.t()
   @type message :: Gossip.Message.t()
 
@@ -29,4 +30,14 @@ defmodule Gossip.Client do
   A new message was received from Gossip on a channel
   """
   @callback message_broadcast(message()) :: :ok
+
+  @doc """
+  A player has signed in
+  """
+  @callback player_sign_in(game_name(), player_name()) :: :ok
+
+  @doc """
+  A player has signed out
+  """
+  @callback player_sign_out(game_name(), player_name()) :: :ok
 end

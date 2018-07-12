@@ -26,4 +26,32 @@ defmodule Gossip do
         WebSockex.cast(Gossip.Socket, {:broadcast, channel, message})
     end
   end
+
+  @doc """
+  Send a player sign in event
+  """
+  @spec player_sign_in(Gossip.Client.player_name()) :: :ok
+  def player_sign_in(player_name) do
+    case Process.whereis(Gossip.Socket) do
+      nil ->
+        :ok
+
+      _pid ->
+        WebSockex.cast(Gossip.Socket, {:player_sign_in, player_name})
+    end
+  end
+
+  @doc """
+  Send a player sign out event
+  """
+  @spec player_sign_out(Gossip.Client.player_name()) :: :ok
+  def player_sign_out(player_name) do
+    case Process.whereis(Gossip.Socket) do
+      nil ->
+        :ok
+
+      _pid ->
+        WebSockex.cast(Gossip.Socket, {:player_sign_out, player_name})
+    end
+  end
 end

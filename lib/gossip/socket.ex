@@ -61,6 +61,26 @@ defmodule Gossip.Socket do
     end
   end
 
+  def handle_cast({:player_sign_in, player_name}, state) do
+    case Implementation.player_sign_in(state, player_name) do
+      {:reply, message, state} ->
+        {:reply, {:text, message}, state}
+
+      {:ok, state} ->
+        {:ok, state}
+    end
+  end
+
+  def handle_cast({:player_sign_out, player_name}, state) do
+    case Implementation.player_sign_out(state, player_name) do
+      {:reply, message, state} ->
+        {:reply, {:text, message}, state}
+
+      {:ok, state} ->
+        {:ok, state}
+    end
+  end
+
   def handle_cast(_, state) do
     {:ok, state}
   end
@@ -88,7 +108,7 @@ defmodule Gossip.Socket do
           "client_id" => client_id(),
           "client_secret" => client_secret(),
           "user_agent" => callback_module().user_agent(),
-          "supports" => ["channels"],
+          "supports" => ["channels", "players"],
           "channels" => channels,
         },
       })
@@ -133,6 +153,28 @@ defmodule Gossip.Socket do
       end
     end
 
+    def player_sign_in(state, player_name) do
+      message = Poison.encode!(%{
+        "event" => "players/sign-in",
+        "payload" => %{
+          "name" => player_name,
+        },
+      })
+
+      {:reply, message, state}
+    end
+
+    def player_sign_out(state, player_name) do
+      message = Poison.encode!(%{
+        "event" => "players/sign-out",
+        "payload" => %{
+          "name" => player_name,
+        },
+      })
+
+      {:reply, message, state}
+    end
+
     def process(state, message = %{"event" => "authenticate"}) do
       case message do
         %{"status" => "success"} ->
@@ -172,6 +214,28 @@ defmodule Gossip.Socket do
       }
 
       callback_module().message_broadcast(message)
+
+      {:ok, state}
+    end
+
+    def process(state, %{"event" => "players/sign-in", "payload" => payload}) do
+      Logger.debug("New sign in event", type: :gossip)
+
+      game_name = Map.get(payload, "game")
+      player_name = Map.get(payload, "name")
+
+      callback_module().player_sign_in(game_name, player_name)
+
+      {:ok, state}
+    end
+
+    def process(state, %{"event" => "players/sign-out", "payload" => payload}) do
+      Logger.debug("New sign out event", type: :gossip)
+
+      game_name = Map.get(payload, "game")
+      player_name = Map.get(payload, "name")
+
+      callback_module().player_sign_out(game_name, player_name)
 
       {:ok, state}
     end
