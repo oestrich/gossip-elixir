@@ -5,6 +5,7 @@ defmodule Gossip.Monitor do
 
   use GenServer, restart: :permanent
 
+  @boot_delay 1_000
   @restart_delay 15_000
   @sweep_delay 30_000
 
@@ -18,7 +19,7 @@ defmodule Gossip.Monitor do
 
   def init(_) do
     Process.flag(:trap_exit, true)
-    Process.send_after(self(), :check_socket_alive, @sweep_delay)
+    Process.send_after(self(), :check_socket_alive, @boot_delay)
     {:ok, %{process: nil, online: false}}
   end
 
