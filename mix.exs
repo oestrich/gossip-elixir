@@ -29,6 +29,7 @@ defmodule Gossip.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:ex_doc, ">= 0.0.0", only: :dev},
       {:poison, "~> 3.1"},
       {:websockex, "~> 0.4.0"}
     ]
