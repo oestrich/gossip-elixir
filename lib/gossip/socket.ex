@@ -138,7 +138,7 @@ defmodule Gossip.Socket do
       case channel in state.channels do
         true ->
           message = Poison.encode!(%{
-            "event" => "messages/new",
+            "event" => "channels/send",
             "payload" => %{
               "channel" => channel,
               "name" => message.name,
@@ -205,7 +205,7 @@ defmodule Gossip.Socket do
       {:reply, message, state}
     end
 
-    def process(state, %{"event" => "messages/broadcast", "payload" => payload}) do
+    def process(state, %{"event" => "channels/broadcast", "payload" => payload}) do
       message = %Message{
         channel: payload["channel"],
         game: payload["game"],
