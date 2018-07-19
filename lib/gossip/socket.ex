@@ -81,6 +81,16 @@ defmodule Gossip.Socket do
     end
   end
 
+  def handle_cast(:players_status, state) do
+    case Implementation.players_status(state) do
+      {:reply, message, state} ->
+        {:reply, {:text, message}, state}
+
+      {:ok, state} ->
+        {:ok, state}
+    end
+  end
+
   def handle_cast(_, state) do
     {:ok, state}
   end
@@ -175,6 +185,15 @@ defmodule Gossip.Socket do
       {:reply, message, state}
     end
 
+    def players_status(state) do
+      message = Poison.encode!(%{
+        "event" => "players/status",
+        "ref" => UUID.uuid4()
+      })
+
+      {:reply, message, state}
+    end
+
     def process(state, message = %{"event" => "authenticate"}) do
       case message do
         %{"status" => "success"} ->
@@ -240,6 +259,23 @@ defmodule Gossip.Socket do
       {:ok, state}
     end
 
-    def process(state, _), do: {:ok, state}
+    def process(state, %{"event" => "players/status", "payload" => payload}) do
+      Logger.debug("Received players/status", type: :gossip)
+
+      game_name = Map.get(payload, "game")
+      player_names = Map.get(payload, "players")
+
+      callback_module().players_status(game_name, player_names)
+
+      {:ok, state}
+    end
+
+    def process(state, event) do
+      Logger.debug(fn ->
+        "Received unknown event - #{inspect(event)}"
+      end)
+
+      {:ok, state}
+    end
   end
 end

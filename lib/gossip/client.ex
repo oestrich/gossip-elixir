@@ -40,4 +40,9 @@ defmodule Gossip.Client do
   A player has signed out
   """
   @callback player_sign_out(game_name(), player_name()) :: :ok
+
+  @doc """
+  Player status update
+  """
+  @callback players_status(game_name(), [player_name()]) :: :ok
 end

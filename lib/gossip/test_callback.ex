@@ -20,4 +20,7 @@ defmodule Gossip.TestCallback do
 
   @impl true
   def player_sign_out(_game_name, _player_name), do: :ok
+
+  @impl true
+  def players_status(_game_name, _player_names), do: :ok
 end

@@ -29,13 +29,7 @@ defmodule Gossip do
   """
   @spec broadcast(Gossip.Client.channel_name(), Gossip.Message.send()) :: :ok
   def broadcast(channel, message) do
-    case Process.whereis(Gossip.Socket) do
-      nil ->
-        :ok
-
-      _pid ->
-        WebSockex.cast(Gossip.Socket, {:broadcast, channel, message})
-    end
+    maybe_send({:broadcast, channel, message})
   end
 
   @doc """
@@ -43,13 +37,7 @@ defmodule Gossip do
   """
   @spec player_sign_in(Gossip.Client.player_name()) :: :ok
   def player_sign_in(player_name) do
-    case Process.whereis(Gossip.Socket) do
-      nil ->
-        :ok
-
-      _pid ->
-        WebSockex.cast(Gossip.Socket, {:player_sign_in, player_name})
-    end
+    maybe_send({:player_sign_in, player_name})
   end
 
   @doc """
@@ -57,12 +45,26 @@ defmodule Gossip do
   """
   @spec player_sign_out(Gossip.Client.player_name()) :: :ok
   def player_sign_out(player_name) do
+    maybe_send({:player_sign_out, player_name})
+  end
+
+  @doc """
+  Check Gossip for players that are online.
+
+  You will get a callback per game that is online.
+  """
+  @spec request_players_online() :: :ok
+  def request_players_online() do
+    maybe_send(:players_status)
+  end
+
+  defp maybe_send(message) do
     case Process.whereis(Gossip.Socket) do
       nil ->
         :ok
 
       _pid ->
-        WebSockex.cast(Gossip.Socket, {:player_sign_out, player_name})
+        WebSockex.cast(Gossip.Socket, message)
     end
   end
 end
