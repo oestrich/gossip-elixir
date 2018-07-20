@@ -5,12 +5,12 @@ defmodule Gossip.Socket do
 
   use WebSockex
 
-  alias Gossip.Message
-
   require Logger
 
   alias Gossip.Monitor
+  alias Gossip.Message
   alias Gossip.Socket.Implementation
+  alias Gossip.Tells
 
   def url(), do: Application.get_env(:gossip, :url)
 
@@ -91,6 +91,10 @@ defmodule Gossip.Socket do
     end
   end
 
+  def handle_cast({:send, message}, state) do
+    {:reply, {:text, Poison.encode!(message)}, state}
+  end
+
   def handle_cast(_, state) do
     {:ok, state}
   end
@@ -118,7 +122,7 @@ defmodule Gossip.Socket do
           "client_id" => client_id(),
           "client_secret" => client_secret(),
           "user_agent" => callback_module().user_agent(),
-          "supports" => ["channels", "players"],
+          "supports" => ["channels", "players", "tells"],
           "channels" => channels,
         },
       })
@@ -267,6 +271,12 @@ defmodule Gossip.Socket do
 
       callback_module().players_status(game_name, player_names)
 
+      {:ok, state}
+    end
+
+    def process(state, event = %{"event" => "tells/send"}) do
+      Logger.debug("Received tells/send", type: :gossip)
+      Tells.response(event)
       {:ok, state}
     end
 
