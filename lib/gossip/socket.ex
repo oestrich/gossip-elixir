@@ -123,6 +123,7 @@ defmodule Gossip.Socket do
           "client_secret" => client_secret(),
           "user_agent" => callback_module().user_agent(),
           "supports" => ["channels", "players", "tells"],
+          "version" => "2.0.0",
           "channels" => channels,
         },
       })
