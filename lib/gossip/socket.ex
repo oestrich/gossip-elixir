@@ -286,6 +286,21 @@ defmodule Gossip.Socket do
       {:ok, state}
     end
 
+    def process(state, event = %{"event" => "tells/receive", "payload" => payload}) do
+      Logger.debug(fn ->
+        "Received tells/receive - #{inspect(event)}"
+      end, type: :gossip)
+
+      from_game = Map.get(payload, "game")
+      from_player = Map.get(payload, "from")
+      to_player = Map.get(payload, "player")
+      message = Map.get(payload, "message")
+
+      callback_module().tell_received(from_game, from_player, to_player, message)
+
+      {:ok, state}
+    end
+
     def process(state, event) do
       Logger.debug(fn ->
         "Received unknown event - #{inspect(event)}"

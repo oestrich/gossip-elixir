@@ -45,4 +45,9 @@ defmodule Gossip.Client do
   Player status update
   """
   @callback players_status(game_name(), [player_name()]) :: :ok
+
+  @doc """
+  New tell received
+  """
+  @callback tell_received(game_name(), from_player :: player_name(), to_player :: player_name(), message()) :: :ok
 end
