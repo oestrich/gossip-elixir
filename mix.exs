@@ -33,6 +33,7 @@ defmodule Gossip.MixProject do
       {:elixir_uuid, "~> 1.2"},
       {:ex_doc, ">= 0.0.0", only: :dev},
       {:poison, "~> 3.1"},
+      {:timex, "~> 3.1"},
       {:websockex, "~> 0.4.0"}
     ]
   end

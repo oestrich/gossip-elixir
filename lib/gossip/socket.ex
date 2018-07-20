@@ -5,12 +5,12 @@ defmodule Gossip.Socket do
 
   use WebSockex
 
-  alias Gossip.Message
-
   require Logger
 
   alias Gossip.Monitor
+  alias Gossip.Message
   alias Gossip.Socket.Implementation
+  alias Gossip.Tells
 
   def url(), do: Application.get_env(:gossip, :url)
 
@@ -91,6 +91,10 @@ defmodule Gossip.Socket do
     end
   end
 
+  def handle_cast({:send, message}, state) do
+    {:reply, {:text, Poison.encode!(message)}, state}
+  end
+
   def handle_cast(_, state) do
     {:ok, state}
   end
@@ -118,7 +122,8 @@ defmodule Gossip.Socket do
           "client_id" => client_id(),
           "client_secret" => client_secret(),
           "user_agent" => callback_module().user_agent(),
-          "supports" => ["channels", "players"],
+          "supports" => ["channels", "players", "tells"],
+          "version" => "2.0.0",
           "channels" => channels,
         },
       })
@@ -224,6 +229,12 @@ defmodule Gossip.Socket do
       {:reply, message, state}
     end
 
+    def process(state, %{"event" => "restart", "payload" => payload}) do
+      Logger.debug("Gossip - restart incoming #{inspect(payload)}", type: :gossip)
+
+      {:ok, state}
+    end
+
     def process(state, %{"event" => "channels/broadcast", "payload" => payload}) do
       message = %Message{
         channel: payload["channel"],
@@ -266,6 +277,27 @@ defmodule Gossip.Socket do
       player_names = Map.get(payload, "players")
 
       callback_module().players_status(game_name, player_names)
+
+      {:ok, state}
+    end
+
+    def process(state, event = %{"event" => "tells/send"}) do
+      Logger.debug("Received tells/send", type: :gossip)
+      Tells.response(event)
+      {:ok, state}
+    end
+
+    def process(state, event = %{"event" => "tells/receive", "payload" => payload}) do
+      Logger.debug(fn ->
+        "Received tells/receive - #{inspect(event)}"
+      end, type: :gossip)
+
+      from_game = Map.get(payload, "from_game")
+      from_player = Map.get(payload, "from_name")
+      to_player = Map.get(payload, "to_name")
+      message = Map.get(payload, "message")
+
+      callback_module().tell_received(from_game, from_player, to_player, message)
 
       {:ok, state}
     end
