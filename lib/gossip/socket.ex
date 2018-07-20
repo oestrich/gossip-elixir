@@ -291,9 +291,9 @@ defmodule Gossip.Socket do
         "Received tells/receive - #{inspect(event)}"
       end, type: :gossip)
 
-      from_game = Map.get(payload, "game")
-      from_player = Map.get(payload, "from")
-      to_player = Map.get(payload, "player")
+      from_game = Map.get(payload, "from_game")
+      from_player = Map.get(payload, "from_name")
+      to_player = Map.get(payload, "to_name")
       message = Map.get(payload, "message")
 
       callback_module().tell_received(from_game, from_player, to_player, message)

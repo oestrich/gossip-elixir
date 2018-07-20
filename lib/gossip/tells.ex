@@ -61,9 +61,9 @@ defmodule Gossip.Tells do
         "event" => "tells/send",
         "ref" => remote_ref,
         "payload" => %{
-          "from" => message.sending_player,
-          "game" => message.game_name,
-          "player" => message.player_name,
+          "from_name" => message.sending_player,
+          "to_game" => message.game_name,
+          "to_name" => message.player_name,
           "sent_at" => Timex.now() |> Timex.set(microsecond: {0, 0}) |> Timex.format!("{ISO:Extended:Z}"),
           "message" => message.message
         }
