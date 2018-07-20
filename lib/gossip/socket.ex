@@ -228,6 +228,12 @@ defmodule Gossip.Socket do
       {:reply, message, state}
     end
 
+    def process(state, %{"event" => "restart", "payload" => payload}) do
+      Logger.debug("Gossip - restart incoming #{inspect(payload)}", type: :gossip)
+
+      {:ok, state}
+    end
+
     def process(state, %{"event" => "channels/broadcast", "payload" => payload}) do
       message = %Message{
         channel: payload["channel"],
