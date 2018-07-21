@@ -12,7 +12,9 @@ defmodule Gossip.Socket do
   alias Gossip.Socket.Implementation
   alias Gossip.Tells
 
-  def url(), do: Application.get_env(:gossip, :url)
+  def url() do
+    Application.get_env(:gossip, :url) || "wss://gossip.haus/socket"
+  end
 
   def start_link() do
     state = %{
