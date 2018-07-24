@@ -3,51 +3,45 @@ defmodule Gossip.Client do
   Behaviour for integrating Gossip into your game
   """
 
-  @type user_agent :: String.t()
-  @type channel_name :: String.t()
-  @type game_name :: String.t()
-  @type player_name :: String.t()
-  @type message :: Gossip.Message.t()
-
   @doc """
   Get the game's User Agent.
 
   This should return the game name with a version number.
   """
-  @callback user_agent() :: user_agent()
+  @callback user_agent() :: Gossip.user_agent()
 
   @doc """
   Get the channels you want to subscribe to on start
   """
-  @callback channels() :: [channel_name()]
+  @callback channels() :: [Gossip.channel_name()]
 
   @doc """
   Get the current names of connected players
   """
-  @callback players() :: [player_name()]
+  @callback players() :: [Gossip.player_name()]
 
   @doc """
   A new message was received from Gossip on a channel
   """
-  @callback message_broadcast(message()) :: :ok
+  @callback message_broadcast(Gossip.message()) :: :ok
 
   @doc """
   A player has signed in
   """
-  @callback player_sign_in(game_name(), player_name()) :: :ok
+  @callback player_sign_in(Gossip.game_name(), Gossip.player_name()) :: :ok
 
   @doc """
   A player has signed out
   """
-  @callback player_sign_out(game_name(), player_name()) :: :ok
+  @callback player_sign_out(Gossip.game_name(), Gossip.player_name()) :: :ok
 
   @doc """
   Player status update
   """
-  @callback players_status(game_name(), [player_name()]) :: :ok
+  @callback players_status(Gossip.game_name(), [Gossip.player_name()]) :: :ok
 
   @doc """
   New tell received
   """
-  @callback tell_received(game_name(), from_player :: player_name(), to_player :: player_name(), message()) :: :ok
+  @callback tell_received(Gossip.game_name(), from_player :: Gossip.player_name(), to_player :: Gossip.player_name(), Gossip.message()) :: :ok
 end

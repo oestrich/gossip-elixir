@@ -1,14 +1,19 @@
 defmodule Gossip do
   use Application
 
-  alias Gossip.Client
+  alias Gossip.Players
   alias Gossip.Tells
 
-  def start(_type, _args) do
-    import Supervisor.Spec
+  @type user_agent :: String.t()
+  @type channel_name :: String.t()
+  @type game_name :: String.t()
+  @type player_name :: String.t()
+  @type message :: Gossip.Message.t()
 
+  def start(_type, _args) do
     children = [
-      supervisor(Gossip.Supervisor, []),
+      {Gossip.Supervisor, []},
+      {Players, []},
       {Tells, []}
     ]
 
@@ -35,7 +40,7 @@ defmodule Gossip do
   @doc """
   Send a message to the Gossip network
   """
-  @spec broadcast(Client.channel_name(), Message.send()) :: :ok
+  @spec broadcast(channel_name(), Message.send()) :: :ok
   def broadcast(channel, message) do
     maybe_send({:broadcast, channel, message})
   end
@@ -43,7 +48,7 @@ defmodule Gossip do
   @doc """
   Send a player sign in event
   """
-  @spec player_sign_in(Client.player_name()) :: :ok
+  @spec player_sign_in(player_name()) :: :ok
   def player_sign_in(player_name) do
     maybe_send({:player_sign_in, player_name})
   end
@@ -51,15 +56,26 @@ defmodule Gossip do
   @doc """
   Send a player sign out event
   """
-  @spec player_sign_out(Client.player_name()) :: :ok
+  @spec player_sign_out(player_name()) :: :ok
   def player_sign_out(player_name) do
     maybe_send({:player_sign_out, player_name})
   end
 
   @doc """
+  Get the local list of remote players.
+
+  This is tracked as players sign in and out. It is also periodically updated
+  by retrieving the full list.
+  """
+  def who(), do: Players.who()
+
+  @doc """
   Check Gossip for players that are online.
 
   The callback you will receive is `Gossip.Client.players_status/2`.
+
+  Note that you will periodically recieve this callback as the Gossip client
+  will refresh it's own state.
   """
   @spec request_players_online() :: :ok
   def request_players_online() do
@@ -69,7 +85,7 @@ defmodule Gossip do
   @doc """
   Send a tell to a remote game and player.
   """
-  @spec send_tell(Client.player_name(), Client.game_name(), Client.player_name(), Client.message()) ::
+  @spec send_tell(player_name(), game_name(), player_name(), message()) ::
     :ok | {:error, :offline} | {:error, String.t()}
   def send_tell(sending_player, game_name, player_name, message) do
     try do

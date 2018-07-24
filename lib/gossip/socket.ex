@@ -9,6 +9,7 @@ defmodule Gossip.Socket do
 
   alias Gossip.Monitor
   alias Gossip.Message
+  alias Gossip.Players
   alias Gossip.Socket.Implementation
   alias Gossip.Tells
 
@@ -206,6 +207,8 @@ defmodule Gossip.Socket do
         %{"status" => "success"} ->
           Logger.info("Authenticated against Gossip", type: :gossip)
 
+          Gossip.request_players_online()
+
           {:ok, Map.put(state, :authenticated, true)}
 
         %{"status" => "failure"} ->
@@ -256,6 +259,8 @@ defmodule Gossip.Socket do
       game_name = Map.get(payload, "game")
       player_name = Map.get(payload, "name")
 
+      Players.sign_in(game_name, player_name)
+
       callback_module().player_sign_in(game_name, player_name)
 
       {:ok, state}
@@ -267,6 +272,8 @@ defmodule Gossip.Socket do
       game_name = Map.get(payload, "game")
       player_name = Map.get(payload, "name")
 
+      Players.sign_out(game_name, player_name)
+
       callback_module().player_sign_out(game_name, player_name)
 
       {:ok, state}
@@ -277,6 +284,8 @@ defmodule Gossip.Socket do
 
       game_name = Map.get(payload, "game")
       player_names = Map.get(payload, "players")
+
+      Players.player_list(game_name, player_names)
 
       callback_module().players_status(game_name, player_names)
 
