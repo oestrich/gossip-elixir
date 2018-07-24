@@ -72,7 +72,9 @@ defmodule Gossip do
   @doc """
   Check Gossip for players that are online.
 
-  The callback you will receive is `Gossip.Client.players_status/2`.
+  This sends a `players/status` event to Gossip, sending back the current game
+  presence on the server. You will receive the updates via the callback
+  `Gossip.Client.players_status/2`.
 
   Note that you will periodically recieve this callback as the Gossip client
   will refresh it's own state.

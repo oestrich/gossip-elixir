@@ -37,6 +37,10 @@ defmodule Gossip.Client do
 
   @doc """
   Player status update
+
+  You will receive this callback anytime a `players/status` event is sent. These are sent
+  after calling `Gossip.request_players_online/0` and periodically updated from the local
+  player cache, `Gossip.Players`.
   """
   @callback players_status(Gossip.game_name(), [Gossip.player_name()]) :: :ok
 
