@@ -67,7 +67,8 @@ defmodule Gossip.Players do
   end
 
   def handle_call({:who}, _from, state) do
-    {:reply, state.games, state}
+    {:ok, who} = Implementation.who(state)
+    {:reply, who, state}
   end
 
   def handle_cast({:player_list, game_name, players}, state) do
@@ -88,6 +89,7 @@ defmodule Gossip.Players do
   def handle_info({:refresh_list}, state) do
     Gossip.request_players_online()
     schedule_refresh_list()
+    {:ok, state} = Implementation.sweep_games(state)
     {:noreply, state}
   end
 
@@ -98,30 +100,66 @@ defmodule Gossip.Players do
   defmodule Implementation do
     @moduledoc false
 
+    # get a game from the map, defaulting if not present
+    defp get_game(state, game_name) do
+      Map.get(state.games, game_name, %{last_seen: Timex.now()})
+    end
+
+    defp touch_game(game) do
+      Map.put(game, :last_seen, Timex.now())
+    end
+
+    @doc false
+    def who(state) do
+      games =
+        state.games
+        |> Enum.map(fn {game_name, game} ->
+          {game_name, Map.get(game, :players, [])}
+        end)
+        |> Enum.into(%{})
+
+      {:ok, games}
+    end
+
     @doc false
     def player_list(state, game_name, players) do
-      games = Map.put(state.games, game_name, players)
+      game = get_game(state, game_name)
+      game =
+        game
+        |> Map.put(:players, players)
+        |> touch_game()
+
+      games = Map.put(state.games, game_name, game)
       {:ok, %{state | games: games}}
     end
 
     @doc false
     def sign_in(state, game_name, player_name) do
-      players = Map.get(state.games, game_name, [])
+      game = get_game(state, game_name)
+
+      players = Map.get(game, :players, [])
       players = [player_name | players]
       players =
         players
         |> Enum.sort()
         |> Enum.uniq()
 
-      games = Map.put(state.games, game_name, players)
+      game =
+        game
+        |> Map.put(:players, players)
+        |> touch_game()
+
+      games = Map.put(state.games, game_name, game)
       {:ok, %{state | games: games}}
     end
 
     @doc false
     def sign_out(state, game_name, player_name) do
+      game = get_game(state, game_name)
+
       players =
-        state.games
-        |> Map.get(game_name, [])
+        game
+        |> Map.get(:players, [])
         |> List.delete(player_name)
 
       case Enum.empty?(players) do
@@ -130,9 +168,30 @@ defmodule Gossip.Players do
           {:ok, %{state | games: games}}
 
         false ->
-          games = Map.put(state.games, game_name, players)
+          game =
+            game
+            |> Map.put(:players, players)
+            |> touch_game()
+
+          games = Map.put(state.games, game_name, game)
           {:ok, %{state | games: games}}
       end
+    end
+
+    @doc false
+    def sweep_games(state) do
+      active_cutoff = Timex.now() |> Timex.shift(minutes: -3)
+
+      games =
+        state.games
+        |> Enum.reject(fn {_name, game} ->
+          Timex.after?(game.last_seen, active_cutoff)
+        end)
+        |> Enum.into(%{})
+
+      state = Map.put(state, :games, games)
+
+      {:ok, state}
     end
   end
 end

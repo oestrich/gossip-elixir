@@ -52,6 +52,26 @@ defmodule Gossip.PlayersTest do
     end
   end
 
+  describe "cleaning out games that haven't been seen recently" do
+    test "keeps 'active' games" do
+      state = %{
+        games: %{
+          "ExVenture" => %{
+            last_seen: Timex.now() |> Timex.shift(minutes: -5),
+            players: [],
+          },
+          "ExVenture 2" => %{
+            last_seen: Timex.now(),
+            players: [],
+          },
+        }
+      }
+
+      {:ok, state} = Players.Implementation.sweep_games(state)
+      assert length(Map.keys(state.games)) == 1
+    end
+  end
+
   def reset(_) do
     Players.reset()
   end
