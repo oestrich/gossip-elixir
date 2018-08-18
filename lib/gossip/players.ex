@@ -108,7 +108,11 @@ defmodule Gossip.Players do
     def sign_in(state, game_name, player_name) do
       players = Map.get(state.games, game_name, [])
       players = [player_name | players]
-      players = Enum.sort(players)
+      players =
+        players
+        |> Enum.sort()
+        |> Enum.uniq()
+
       games = Map.put(state.games, game_name, players)
       {:ok, %{state | games: games}}
     end

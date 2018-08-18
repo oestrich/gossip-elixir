@@ -12,6 +12,13 @@ defmodule Gossip.PlayersTest do
       assert Players.who() == %{"ExVenture" => ["player"]}
     end
 
+    test "double sign in message uniques the list" do
+      Players.sign_in("ExVenture", "player")
+      Players.sign_in("ExVenture", "player")
+
+      assert Players.who() == %{"ExVenture" => ["player"]}
+    end
+
     test "a second player - list is sorted" do
       Players.sign_in("ExVenture", "player1")
       Players.sign_in("ExVenture", "player2")
