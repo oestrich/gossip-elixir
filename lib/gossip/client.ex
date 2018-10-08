@@ -54,8 +54,9 @@ defmodule Gossip.Client do
     A behavior for system level callbacks
     """
 
-    @type event() :: map()
+    @type state :: map()
+    @type event :: map()
 
-    @callback process(event()) :: :ok
+    @callback process(state(), event()) :: :ok
   end
 end

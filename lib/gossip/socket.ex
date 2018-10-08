@@ -319,15 +319,17 @@ defmodule Gossip.Socket do
         "Received unknown event - #{inspect(event)}"
       end)
 
+      maybe_system_process(state, event)
+    end
+
+    defp maybe_system_process(state, event) do
       case system_module() do
         nil ->
-          :ok
+          {:ok, state}
 
         system_module ->
-          system_module.process(event)
+          system_module.process(state, event)
       end
-
-      {:ok, state}
     end
   end
 end
