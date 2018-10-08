@@ -115,6 +115,7 @@ defmodule Gossip.Socket do
     def client_id(), do: Application.get_env(:gossip, :client_id)
     def client_secret(), do: Application.get_env(:gossip, :client_secret)
     def callback_module(), do: Application.get_env(:gossip, :callback_module)
+    def system_module(), do: Application.get_env(:gossip, :system_module)
 
     def authorize(state) do
       channels = callback_module().channels()
@@ -317,6 +318,14 @@ defmodule Gossip.Socket do
       Logger.debug(fn ->
         "Received unknown event - #{inspect(event)}"
       end)
+
+      case system_module() do
+        nil ->
+          :ok
+
+        system_module ->
+          system_module.event(event)
+      end
 
       {:ok, state}
     end

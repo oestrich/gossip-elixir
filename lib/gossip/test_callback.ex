@@ -7,7 +7,7 @@ defmodule Gossip.TestCallback do
   def user_agent(), do: "Test Client"
 
   @impl true
-  def channels(), do: []
+  def channels(), do: ["gossip"]
 
   @impl true
   def players(), do: []

@@ -48,4 +48,14 @@ defmodule Gossip.Client do
   New tell received
   """
   @callback tell_received(Gossip.game_name(), from_player :: Gossip.player_name(), to_player :: Gossip.player_name(), Gossip.message()) :: :ok
+
+  defmodule SystemCallback do
+    @moduledoc """
+    A behavior for system level callbacks
+    """
+
+    @type event() :: map()
+
+    @callback process(event()) :: :ok
+  end
 end
