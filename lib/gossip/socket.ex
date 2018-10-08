@@ -324,7 +324,7 @@ defmodule Gossip.Socket do
           :ok
 
         system_module ->
-          system_module.event(event)
+          system_module.process(event)
       end
 
       {:ok, state}
