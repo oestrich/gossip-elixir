@@ -7,6 +7,7 @@ defmodule Gossip.Socket do
 
   require Logger
 
+  alias Gossip.Games
   alias Gossip.Monitor
   alias Gossip.Message
   alias Gossip.Players
@@ -335,6 +336,8 @@ defmodule Gossip.Socket do
 
     def process(state, %{"event" => "games/status", "payload" => payload}) do
       Logger.debug("Received games/status", type: :gossip)
+
+      Games.update_game(payload)
 
       callback_module().games_status(payload)
 

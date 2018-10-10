@@ -1,6 +1,7 @@
 defmodule Gossip do
   use Application
 
+  alias Gossip.Games
   alias Gossip.Players
   alias Gossip.Tells
 
@@ -14,6 +15,7 @@ defmodule Gossip do
   def start(_type, _args) do
     children = [
       {Gossip.Supervisor, []},
+      {Games, []},
       {Players, []},
       {Tells, []}
     ]
