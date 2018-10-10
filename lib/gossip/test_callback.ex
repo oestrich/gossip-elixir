@@ -26,4 +26,7 @@ defmodule Gossip.TestCallback do
 
   @impl true
   def tell_received(_from_game, _from_player, _to_player, _message), do: :ok
+
+  @impl true
+  def games_status(_game), do: :ok
 end

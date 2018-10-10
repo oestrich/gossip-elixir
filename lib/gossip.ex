@@ -6,6 +6,7 @@ defmodule Gossip do
 
   @type user_agent :: String.t()
   @type channel_name :: String.t()
+  @type game :: map()
   @type game_name :: String.t()
   @type player_name :: String.t()
   @type message :: Gossip.Message.t()
@@ -82,6 +83,18 @@ defmodule Gossip do
   @spec request_players_online() :: :ok
   def request_players_online() do
     maybe_send(:players_status)
+  end
+
+  @doc """
+  Get more detail about connected games.
+
+  This sends a `games/status` event to Gossip, sending back an event per connected
+  game to gossip. You will receive the updates via the callback
+  `Gossip.Client.games_status/1`.
+  """
+  @spec request_games() :: :ok
+  def request_games() do
+    maybe_send(:games_status)
   end
 
   @doc """

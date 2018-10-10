@@ -49,6 +49,12 @@ defmodule Gossip.Client do
   """
   @callback tell_received(Gossip.game_name(), from_player :: Gossip.player_name(), to_player :: Gossip.player_name(), Gossip.message()) :: :ok
 
+  @doc """
+  Game status update
+  """
+  @since "0.6.0"
+  @callback games_status(Gossip.game()) :: :ok
+
   defmodule SystemCallback do
     @moduledoc """
     A behavior for system level callbacks
