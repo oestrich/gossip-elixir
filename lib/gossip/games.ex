@@ -20,6 +20,18 @@ defmodule Gossip.Games do
     GenServer.call(__MODULE__, {:list})
   end
 
+  @doc false
+  @since "0.6.0"
+  @spec request_game(Gossip.game_name()) :: {:ok, game()} | {:error, :offline}
+  def request_game(game_name) do
+    GenServer.call(__MODULE__, {:fetch_game, game_name})
+  end
+
+  @doc false
+  def response_status(event) do
+    GenServer.cast(__MODULE__, {:response_status, event})
+  end
+
   @doc """
   Update the local player list after a `players/status` event comes in
   """
@@ -45,7 +57,7 @@ defmodule Gossip.Games do
   def init(_) do
     schedule_refresh_list()
     Process.send_after(self(), {:refresh_list}, :timer.seconds(5))
-    {:ok, %{games: %{}, last_refresh: Timex.now()}}
+    {:ok, %{games: %{}, last_refresh: Timex.now(), refs: %{}}}
   end
 
   def handle_call({:reset}, _from, state) do
@@ -58,8 +70,17 @@ defmodule Gossip.Games do
     {:reply, who, state}
   end
 
+  def handle_call({:fetch_game, game_name}, ref, state) do
+    Implementation.handle_fetch_game(state, ref, game_name)
+  end
+
   def handle_cast({:update_game, game}, state) do
     {:ok, state} = Implementation.update_game(state, game)
+    {:noreply, state}
+  end
+
+  def handle_cast({:response_status, event}, state) do
+    {:ok, state} = Implementation.handle_response(state, event)
     {:noreply, state}
   end
 
@@ -90,6 +111,8 @@ defmodule Gossip.Games do
   defmodule Implementation do
     @moduledoc false
 
+    require Logger
+
     @doc false
     def list(state) do
       {:ok, Map.values(state.games)}
@@ -100,6 +123,72 @@ defmodule Gossip.Games do
       games = Map.put(state.games, game["name"], game)
 
       {:ok, %{state | games: games}}
+    end
+
+    def handle_fetch_game(state, ref, game_name) do
+      case Process.whereis(Gossip.Socket) do
+        nil ->
+          {:reply, {:error, :offline}, state}
+
+        _pid ->
+          send_to_gossip(state, ref, game_name)
+      end
+    end
+
+    defp send_to_gossip(state, ref, game_name) do
+      remote_ref = UUID.uuid4()
+
+      Logger.debug(fn ->
+        "Requesting a game - ref: #{remote_ref}"
+      end)
+
+      message = %{
+        "event" => "games/status",
+        "ref" => remote_ref,
+        "payload" => %{
+          "game" => game_name,
+        }
+      }
+
+      WebSockex.cast(Gossip.Socket, {:send, message})
+
+      state = %{state | refs: Map.put(state.refs, remote_ref, ref)}
+
+      {:noreply, state}
+    end
+
+    @doc """
+    Handle a response back from Gossip
+
+    If the remote reference is known, reply back to the waiting call.
+    """
+    def handle_response(state, event) do
+      {:ok, state} = maybe_update_game(state, event)
+
+      case Map.get(state.refs, event["ref"]) do
+        nil ->
+          {:ok, state}
+
+        ref ->
+          GenServer.reply(ref, event)
+
+          refs = Map.delete(state.refs, event["ref"])
+          state = Map.put(state, :refs, refs)
+
+          {:ok, state}
+      end
+    end
+
+    defp maybe_update_game(state, event) do
+      payload = Map.get(event, "payload", %{})
+
+      case Map.has_key?(payload, "game") do
+        true ->
+          update_game(state, payload)
+
+        false ->
+          {:ok, state}
+      end
     end
   end
 end

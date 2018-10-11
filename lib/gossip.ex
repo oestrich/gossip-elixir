@@ -93,10 +93,36 @@ defmodule Gossip do
   This sends a `games/status` event to Gossip, sending back an event per connected
   game to gossip. You will receive the updates via the callback
   `Gossip.Client.games_status/1`.
+
+  Note that you will periodically recieve this callback as the Gossip client
+  will refresh it's own state.
   """
+  @since "0.6.0"
   @spec request_games() :: :ok
   def request_games() do
     maybe_send(:games_status)
+  end
+
+  @doc """
+  Get more information about a single game
+  """
+  @since "0.6.0"
+  @spec request_game(Gossip.game_name()) :: {:ok, game()} | {:error, :offline}
+  def request_game(game_name) do
+    try do
+      response = Games.request_game(game_name)
+
+      case response do
+        %{"payload" => payload} ->
+          {:ok, payload}
+
+        _ ->
+          {:error, :unknown}
+      end
+    catch
+      :exit, _ ->
+        {:error, :offline}
+    end
   end
 
   @doc """

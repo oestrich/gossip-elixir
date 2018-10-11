@@ -334,12 +334,20 @@ defmodule Gossip.Socket do
       {:ok, state}
     end
 
-    def process(state, %{"event" => "games/status", "payload" => payload}) do
+    def process(state, event = %{"event" => "games/status", "payload" => payload}) do
       Logger.debug("Received games/status", type: :gossip)
 
-      Games.update_game(payload)
+      Games.response_status(event)
 
       callback_module().games_status(payload)
+
+      {:ok, state}
+    end
+
+    def process(state, event = %{"event" => "games/status"}) do
+      Logger.debug("Received games/status", type: :gossip)
+
+      Games.response_status(event)
 
       {:ok, state}
     end
