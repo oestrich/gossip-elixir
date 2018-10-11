@@ -1,11 +1,13 @@
 defmodule Gossip do
   use Application
 
+  alias Gossip.Games
   alias Gossip.Players
   alias Gossip.Tells
 
   @type user_agent :: String.t()
   @type channel_name :: String.t()
+  @type game :: map()
   @type game_name :: String.t()
   @type player_name :: String.t()
   @type message :: Gossip.Message.t()
@@ -13,6 +15,7 @@ defmodule Gossip do
   def start(_type, _args) do
     children = [
       {Gossip.Supervisor, []},
+      {Games, []},
       {Players, []},
       {Tells, []}
     ]
@@ -82,6 +85,44 @@ defmodule Gossip do
   @spec request_players_online() :: :ok
   def request_players_online() do
     maybe_send(:players_status)
+  end
+
+  @doc """
+  Get more detail about connected games.
+
+  This sends a `games/status` event to Gossip, sending back an event per connected
+  game to gossip. You will receive the updates via the callback
+  `Gossip.Client.games_status/1`.
+
+  Note that you will periodically recieve this callback as the Gossip client
+  will refresh it's own state.
+  """
+  @since "0.6.0"
+  @spec request_games() :: :ok
+  def request_games() do
+    maybe_send(:games_status)
+  end
+
+  @doc """
+  Get more information about a single game
+  """
+  @since "0.6.0"
+  @spec request_game(Gossip.game_name()) :: {:ok, game()} | {:error, :offline}
+  def request_game(game_name) do
+    try do
+      response = Games.request_game(game_name)
+
+      case response do
+        %{"payload" => payload} ->
+          {:ok, payload}
+
+        _ ->
+          {:error, :unknown}
+      end
+    catch
+      :exit, _ ->
+        {:error, :offline}
+    end
   end
 
   @doc """

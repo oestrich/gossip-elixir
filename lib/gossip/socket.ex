@@ -7,6 +7,7 @@ defmodule Gossip.Socket do
 
   require Logger
 
+  alias Gossip.Games
   alias Gossip.Monitor
   alias Gossip.Message
   alias Gossip.Players
@@ -94,6 +95,16 @@ defmodule Gossip.Socket do
     end
   end
 
+  def handle_cast(:games_status, state) do
+    case Implementation.games_status(state) do
+      {:reply, message, state} ->
+        {:reply, {:text, message}, state}
+
+      {:ok, state} ->
+        {:ok, state}
+    end
+  end
+
   def handle_cast({:send, message}, state) do
     {:reply, {:text, Poison.encode!(message)}, state}
   end
@@ -126,8 +137,8 @@ defmodule Gossip.Socket do
           "client_id" => client_id(),
           "client_secret" => client_secret(),
           "user_agent" => callback_module().user_agent(),
-          "supports" => ["channels", "players", "tells"],
-          "version" => "2.0.0",
+          "supports" => ["channels", "players", "tells", "games"],
+          "version" => "2.1.0",
           "channels" => channels,
         },
       })
@@ -197,6 +208,15 @@ defmodule Gossip.Socket do
     def players_status(state) do
       message = Poison.encode!(%{
         "event" => "players/status",
+        "ref" => UUID.uuid4()
+      })
+
+      {:reply, message, state}
+    end
+
+    def games_status(state) do
+      message = Poison.encode!(%{
+        "event" => "games/status",
         "ref" => UUID.uuid4()
       })
 
@@ -310,6 +330,24 @@ defmodule Gossip.Socket do
       message = Map.get(payload, "message")
 
       callback_module().tell_received(from_game, from_player, to_player, message)
+
+      {:ok, state}
+    end
+
+    def process(state, event = %{"event" => "games/status", "payload" => payload}) do
+      Logger.debug("Received games/status", type: :gossip)
+
+      Games.response_status(event)
+
+      callback_module().games_status(payload)
+
+      {:ok, state}
+    end
+
+    def process(state, event = %{"event" => "games/status"}) do
+      Logger.debug("Received games/status", type: :gossip)
+
+      Games.response_status(event)
 
       {:ok, state}
     end
