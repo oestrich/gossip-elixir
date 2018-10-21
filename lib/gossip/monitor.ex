@@ -17,10 +17,14 @@ defmodule Gossip.Monitor do
     GenServer.cast(__MODULE__, {:monitor, self()})
   end
 
+  def restart_incoming(delay) do
+    GenServer.cast(__MODULE__, {:restart_incoming, delay})
+  end
+
   def init(_) do
     Process.flag(:trap_exit, true)
     Process.send_after(self(), :check_socket_alive, @boot_delay)
-    {:ok, %{process: nil, online: false}}
+    {:ok, %{process: nil, online: false, known_delay: nil}}
   end
 
   def handle_cast({:monitor, pid}, state) do
@@ -31,6 +35,11 @@ defmodule Gossip.Monitor do
       |> Map.put(:online, true)
       |> Map.put(:process, pid)
 
+    {:noreply, state}
+  end
+
+  def handle_cast({:restart_incoming, delay}, state) do
+    state = Map.put(state, :known_delay, :timer.seconds(delay))
     {:noreply, state}
   end
 
@@ -53,12 +62,23 @@ defmodule Gossip.Monitor do
           |> Map.put(:online, false)
           |> Map.put(:process, nil)
 
-        Process.send_after(self(), :restart_socket, @restart_delay)
+        delay = get_delay(state)
+        Process.send_after(self(), :restart_socket, delay)
 
         {:noreply, state}
 
       false ->
         {:noreply, state}
+    end
+  end
+
+  defp get_delay(state) do
+    case Map.get(state, :known_delay) do
+      nil ->
+        @restart_delay
+
+      delay ->
+        delay
     end
   end
 end

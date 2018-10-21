@@ -24,6 +24,8 @@ defmodule Gossip.Socket do
       channels: [],
     }
 
+    Logger.debug("Starting socket", type: :gossip)
+
     WebSockex.start_link(url(), __MODULE__, state, [name: Gossip.Socket])
   end
 
@@ -257,6 +259,7 @@ defmodule Gossip.Socket do
 
     def process(state, %{"event" => "restart", "payload" => payload}) do
       Logger.debug("Gossip - restart incoming #{inspect(payload)}", type: :gossip)
+      Monitor.restart_incoming(Map.get(payload, "downtime"))
 
       {:ok, state}
     end
