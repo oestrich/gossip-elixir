@@ -300,16 +300,23 @@ defmodule Gossip.Socket do
       {:ok, state}
     end
 
-    def process(state, %{"event" => "players/status", "payload" => payload}) do
+    def process(state, event = %{"event" => "players/status", "payload" => payload}) do
       Logger.debug("Received players/status", type: :gossip)
 
       game_name = Map.get(payload, "game")
       player_names = Map.get(payload, "players")
 
-      Players.player_list(game_name, player_names)
+      Players.receive_status(event)
 
       callback_module().players_status(game_name, player_names)
 
+      {:ok, state}
+    end
+
+    # This is here for failed events
+    def process(state, event = %{"event" => "players/status"}) do
+      Logger.debug("Received players/status", type: :gossip)
+      Players.receive_status(event)
       {:ok, state}
     end
 
@@ -336,19 +343,15 @@ defmodule Gossip.Socket do
 
     def process(state, event = %{"event" => "games/status", "payload" => payload}) do
       Logger.debug("Received games/status", type: :gossip)
-
       Games.response_status(event)
-
       callback_module().games_status(payload)
-
       {:ok, state}
     end
 
+    # This is here for failed events
     def process(state, event = %{"event" => "games/status"}) do
       Logger.debug("Received games/status", type: :gossip)
-
       Games.response_status(event)
-
       {:ok, state}
     end
 

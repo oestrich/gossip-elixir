@@ -88,6 +88,17 @@ defmodule Gossip do
   end
 
   @doc """
+  Check Gossip for players of a single game
+
+  Unlike the full list version, this will block until Gossip returns.
+  """
+  def request_players_online(game) do
+    catch_offline(fn ->
+      Players.request_game(game)
+    end)
+  end
+
+  @doc """
   Get more detail about connected games.
 
   This sends a `games/status` event to Gossip, sending back an event per connected

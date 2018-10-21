@@ -30,6 +30,9 @@ defmodule Gossip.Games do
       %{"payload" => payload} ->
         {:ok, payload}
 
+      %{"status" => "failure", "error" => error} ->
+        {:error, error}
+
       {:error, :offline} ->
         {:error, :offline}
     end

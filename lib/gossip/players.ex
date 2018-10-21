@@ -7,7 +7,8 @@ defmodule Gossip.Players do
 
   alias Gossip.Players.Implementation
 
-  @type who_list() :: %{
+  @type status :: %{}
+  @type who_list :: %{
     Gossip.game_name() => [Gossip.player_name],
   }
 
@@ -36,6 +37,17 @@ defmodule Gossip.Players do
   end
 
   @doc """
+  Receive a new "players/status" event from the Gossip socket
+
+  This checks for local calls before maybe updating the local cache
+
+  For internal use.
+  """
+  def receive_status(event) do
+    GenServer.cast(__MODULE__, {:receive_status, event})
+  end
+
+  @doc """
   Update the local player list after a `players/status` event comes in
   """
   @spec player_list(Gossip.game_name, [Gossip.player_name]) :: :ok
@@ -57,9 +69,31 @@ defmodule Gossip.Players do
   end
 
   @doc false
+  @since "0.6.0"
+  @spec request_game(Gossip.game_name()) :: {:ok, status()} | {:error, :offline}
+  def request_game(game_name) do
+    response = GenServer.call(__MODULE__, {:fetch_game, game_name})
+
+    case response do
+      %{"payload" => payload} ->
+        {:ok, payload}
+
+      %{"status" => "failure", "error" => error} ->
+        {:error, error}
+
+      {:error, :offline} ->
+        {:error, :offline}
+    end
+  end
+
+  @doc false
   def init(_) do
     schedule_refresh_list()
-    {:ok, %{games: %{}}}
+    {:ok, %{games: %{}, refs: %{}}}
+  end
+
+  def handle_call({:fetch_game, game_name}, ref, state) do
+    Implementation.handle_fetch_game(state, ref, game_name)
   end
 
   def handle_call({:reset}, _from, state) do
@@ -73,6 +107,11 @@ defmodule Gossip.Players do
 
   def handle_cast({:player_list, game_name, players}, state) do
     {:ok, state} = Implementation.player_list(state, game_name, players)
+    {:noreply, state}
+  end
+
+  def handle_cast({:receive_status, event}, state) do
+    {:ok, state} = Implementation.handle_receive(state, event)
     {:noreply, state}
   end
 
@@ -99,6 +138,8 @@ defmodule Gossip.Players do
 
   defmodule Implementation do
     @moduledoc false
+
+    require Logger
 
     # get a game from the map, defaulting if not present
     defp get_game(state, game_name) do
@@ -175,6 +216,76 @@ defmodule Gossip.Players do
 
           games = Map.put(state.games, game_name, game)
           {:ok, %{state | games: games}}
+      end
+    end
+
+    @doc false
+    def handle_fetch_game(state, ref, game_name) do
+      case Process.whereis(Gossip.Socket) do
+        nil ->
+          {:reply, {:error, :offline}, state}
+
+        _pid ->
+          request_players_from_gossip(state, ref, game_name)
+      end
+    end
+
+    defp request_players_from_gossip(state, ref, game_name) do
+      remote_ref = UUID.uuid4()
+
+      Logger.debug(fn ->
+        "Requesting a game's players - ref: #{remote_ref}"
+      end)
+
+      message = %{
+        "event" => "players/status",
+        "ref" => remote_ref,
+        "payload" => %{
+          "game" => game_name,
+        }
+      }
+
+      WebSockex.cast(Gossip.Socket, {:send, message})
+
+      state = %{state | refs: Map.put(state.refs, remote_ref, ref)}
+
+      {:noreply, state}
+    end
+
+    @doc """
+    Handle a response back from Gossip
+
+    If the remote reference is known, reply back to the waiting call.
+    """
+    def handle_receive(state, event) do
+      {:ok, state} = maybe_update_game(state, event)
+
+      case Map.get(state.refs, event["ref"]) do
+        nil ->
+          {:ok, state}
+
+        ref ->
+          GenServer.reply(ref, event)
+
+          refs = Map.delete(state.refs, event["ref"])
+          state = Map.put(state, :refs, refs)
+
+          {:ok, state}
+      end
+    end
+
+    defp maybe_update_game(state, event) do
+      payload = Map.get(event, "payload", %{})
+
+      case Map.has_key?(payload, "game") do
+        true ->
+          game_name = Map.get(payload, "game")
+          player_names = Map.get(payload, "players")
+
+          player_list(state, game_name, player_names)
+
+        false ->
+          {:ok, state}
       end
     end
 
