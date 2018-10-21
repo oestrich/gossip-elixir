@@ -5,12 +5,27 @@ defmodule Gossip.Tells do
 
   alias Gossip.Tells.Implementation
 
-  def response(event) do
-    GenServer.cast(__MODULE__, {:response, event})
-  end
-
   def start_link(_) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
+  end
+
+  def send(sending_player, game_name, player_name, message) do
+    response = GenServer.call(__MODULE__, {:tell, sending_player, game_name, player_name, message})
+
+    case response do
+      {:error, :offline} ->
+        {:error, :offline}
+
+      %{"status" => "success"} ->
+        :ok
+
+      %{"status" => "failure", "error" => error} ->
+        {:error, error}
+    end
+  end
+
+  def response(event) do
+    GenServer.cast(__MODULE__, {:response, event})
   end
 
   def init(_) do

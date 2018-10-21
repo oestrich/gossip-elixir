@@ -10,7 +10,7 @@ defmodule Gossip do
   @type game :: map()
   @type game_name :: String.t()
   @type player_name :: String.t()
-  @type message :: Gossip.Message.t()
+  @type message :: String.t()
 
   def start(_type, _args) do
     children = [
@@ -109,20 +109,9 @@ defmodule Gossip do
   @since "0.6.0"
   @spec request_game(Gossip.game_name()) :: {:ok, game()} | {:error, :offline}
   def request_game(game_name) do
-    try do
-      response = Games.request_game(game_name)
-
-      case response do
-        %{"payload" => payload} ->
-          {:ok, payload}
-
-        _ ->
-          {:error, :unknown}
-      end
-    catch
-      :exit, _ ->
-        {:error, :offline}
-    end
+    catch_offline(fn ->
+      Games.request_game(game_name)
+    end)
   end
 
   @doc """
@@ -131,19 +120,14 @@ defmodule Gossip do
   @spec send_tell(player_name(), game_name(), player_name(), message()) ::
     :ok | {:error, :offline} | {:error, String.t()}
   def send_tell(sending_player, game_name, player_name, message) do
+    catch_offline(fn ->
+      Tells.send(sending_player, game_name, player_name, message)
+    end)
+  end
+
+  def catch_offline(block) do
     try do
-      response = GenServer.call(Tells, {:tell, sending_player, game_name, player_name, message})
-
-      case response do
-        {:error, :offline} ->
-          {:error, :offline}
-
-        %{"status" => "success"} ->
-          :ok
-
-        %{"status" => "failure", "error" => error} ->
-          {:error, error}
-      end
+      block.()
     catch
       :exit, _ ->
         {:error, :offline}

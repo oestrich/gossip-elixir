@@ -24,7 +24,15 @@ defmodule Gossip.Games do
   @since "0.6.0"
   @spec request_game(Gossip.game_name()) :: {:ok, game()} | {:error, :offline}
   def request_game(game_name) do
-    GenServer.call(__MODULE__, {:fetch_game, game_name})
+    response = GenServer.call(__MODULE__, {:fetch_game, game_name})
+
+    case response do
+      %{"payload" => payload} ->
+        {:ok, payload}
+
+      {:error, :offline} ->
+        {:error, :offline}
+    end
   end
 
   @doc false
