@@ -9,6 +9,8 @@ defmodule Gossip.Games do
 
   @type game :: map()
 
+  @ets_key :gossip_games
+
   @refresh_minutes 5
   @refresh_list_diff_seconds 15
 
@@ -52,6 +54,29 @@ defmodule Gossip.Games do
   end
 
   @doc """
+  Check for a game being online
+  """
+  @spec game_online?(Gossip.game_name()) :: boolean()
+  def game_online?(game_name) do
+    case :ets.lookup(@ets_key, game_name) do
+      [{game_name, last_seen_at}] when is_binary(game_name) ->
+        active_cutoff = Timex.now() |> Timex.shift(minutes: -2)
+        Timex.after?(last_seen_at, active_cutoff)
+
+      _ ->
+        false
+    end
+  end
+
+  @doc """
+  Game connected to Gossip
+  """
+  @spec touch_game(Gossip.game_name()) :: :ok
+  def touch_game(game_name) do
+    GenServer.cast(__MODULE__, {:touch_game, game_name})
+  end
+
+  @doc """
   For tests only - resets the player list state
   """
   @spec reset() :: :ok
@@ -67,6 +92,7 @@ defmodule Gossip.Games do
   @doc false
   def init(_) do
     schedule_refresh_list()
+    create_table()
     Process.send_after(self(), {:refresh_list}, :timer.seconds(5))
     {:ok, %{games: %{}, last_refresh: Timex.now(), refs: %{}}}
   end
@@ -95,10 +121,19 @@ defmodule Gossip.Games do
     {:noreply, state}
   end
 
+  def handle_cast({:touch_game, game}, state) do
+    {:ok, state} = Implementation.touch_game(state, @ets_key, game)
+    {:noreply, state}
+  end
+
   def handle_info({:refresh_list}, state) do
     Gossip.request_games()
     schedule_refresh_list()
     {:noreply, %{state | last_refresh: Timex.now()}}
+  end
+
+  defp create_table() do
+    :ets.new(@ets_key, [:set, :protected, :named_table])
   end
 
   defp maybe_refresh_list(state) do
@@ -134,6 +169,11 @@ defmodule Gossip.Games do
       games = Map.put(state.games, game["name"], game)
 
       {:ok, %{state | games: games}}
+    end
+
+    def touch_game(state, ets_key, game_name) do
+      :ets.insert(ets_key, {game_name, Timex.now()})
+      {:ok, state}
     end
 
     def handle_fetch_game(state, ref, game_name) do

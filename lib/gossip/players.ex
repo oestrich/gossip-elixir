@@ -141,12 +141,15 @@ defmodule Gossip.Players do
 
     require Logger
 
+    alias Gossip.Games
+
     # get a game from the map, defaulting if not present
     defp get_game(state, game_name) do
-      Map.get(state.games, game_name, %{last_seen: Timex.now()})
+      Map.get(state.games, game_name, %{name: game_name, last_seen: Timex.now()})
     end
 
     defp touch_game(game) do
+      Games.touch_game(game.name)
       Map.put(game, :last_seen, Timex.now())
     end
 

@@ -55,6 +55,18 @@ defmodule Gossip.Client do
   @since "0.6.0"
   @callback games_status(Gossip.game()) :: :ok
 
+  @doc """
+  A game connected
+  """
+  @since "0.6.1"
+  @callback game_connected(Gossip.game_name()) :: :ok
+
+  @doc """
+  A game disconnected
+  """
+  @since "0.6.1"
+  @callback game_disconnected(Gossip.game_name()) :: :ok
+
   defmodule SystemCallback do
     @moduledoc """
     A behavior for system level callbacks

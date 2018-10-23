@@ -358,6 +358,19 @@ defmodule Gossip.Socket do
       {:ok, state}
     end
 
+    def process(state, %{"event" => "games/connect", "payload" => payload}) do
+      name = Map.get(payload, "game")
+      Games.touch_game(name)
+      callback_module().game_connected(name)
+      {:ok, state}
+    end
+
+    def process(state, %{"event" => "games/disconnect", "payload" => payload}) do
+      name = Map.get(payload, "game")
+      callback_module().game_disconnected(name)
+      {:ok, state}
+    end
+
     def process(state, event) do
       Logger.debug(fn ->
         "Received unknown event - #{inspect(event)}"
