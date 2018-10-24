@@ -4,12 +4,11 @@ defmodule Gossip.Socket.Implementation do
   require Logger
 
   alias Gossip.Games
-  alias Gossip.Players
   alias Gossip.Socket.Core
+  alias Gossip.Socket.Players
   alias Gossip.Tells
 
   def modules(), do: Application.get_env(:gossip, :callback_modules)
-  def players_module(), do: modules()[:players]
   def tells_module(), do: modules()[:tells]
   def games_module(), do: modules()[:games]
   def system_module(), do: modules()[:system]
@@ -46,50 +45,8 @@ defmodule Gossip.Socket.Implementation do
     Core.handle_receive(state, message)
   end
 
-  def process(state, %{"event" => "players/sign-in", "payload" => payload}) do
-    Logger.debug("New sign in event", type: :gossip)
-
-    game_name = Map.get(payload, "game")
-    player_name = Map.get(payload, "name")
-
-    Players.sign_in(game_name, player_name)
-
-    players_module().player_sign_in(game_name, player_name)
-
-    {:ok, state}
-  end
-
-  def process(state, %{"event" => "players/sign-out", "payload" => payload}) do
-    Logger.debug("New sign out event", type: :gossip)
-
-    game_name = Map.get(payload, "game")
-    player_name = Map.get(payload, "name")
-
-    Players.sign_out(game_name, player_name)
-
-    players_module().player_sign_out(game_name, player_name)
-
-    {:ok, state}
-  end
-
-  def process(state, event = %{"event" => "players/status", "payload" => payload}) do
-    Logger.debug("Received players/status", type: :gossip)
-
-    game_name = Map.get(payload, "game")
-    player_names = Map.get(payload, "players")
-
-    Players.receive_status(event)
-
-    players_module().player_update(game_name, player_names)
-
-    {:ok, state}
-  end
-
-  # This is here for failed events
-  def process(state, event = %{"event" => "players/status"}) do
-    Logger.debug("Received players/status", type: :gossip)
-    Players.receive_status(event)
-    {:ok, state}
+  def process(state, message = %{"event" => "players/" <> _}) do
+    Players.handle_receive(state, message)
   end
 
   def process(state, event = %{"event" => "tells/send"}) do

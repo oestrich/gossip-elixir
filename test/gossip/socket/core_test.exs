@@ -56,13 +56,13 @@ defmodule Gossip.Socket.CoreTest do
 
   describe "process an incoming authenticate event" do
     test "successful auth" do
-      {:ok, state} = Core.process_authenticate(%{}, %{"event" => "authenticate", "status" => "success"})
+      {:ok, state} = Core.process_authenticate(%{}, %{"status" => "success"})
 
       assert state.authenticated
     end
 
     test "failed auth" do
-      :stop = Core.process_authenticate(%{}, %{"event" => "authenticate", "status" => "failure"})
+      :stop = Core.process_authenticate(%{}, %{"status" => "failure"})
     end
 
     test "handle receive" do
@@ -87,7 +87,7 @@ defmodule Gossip.Socket.CoreTest do
 
   describe "process an incoming restart event" do
     test "returns a heartbeat event" do
-      {:ok, _state} = Core.process_restart(%{}, %{"event" => "restart", "payload" => %{"downtime" => 15}})
+      {:ok, _state} = Core.process_restart(%{}, %{"payload" => %{"downtime" => 15}})
     end
 
     test "handle receive" do
@@ -104,7 +104,7 @@ defmodule Gossip.Socket.CoreTest do
         "message" => "Hello",
       }
 
-      {:ok, _state} = Core.process_channel_broadcast(%{}, %{"event" => "channels/broadcast", "payload" => payload})
+      {:ok, _state} = Core.process_channel_broadcast(%{}, %{"payload" => payload})
 
       assert [%Message{channel: "gossip"}] = CoreCallbacks.broadcasts()
     end
