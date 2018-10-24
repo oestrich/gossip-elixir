@@ -41,11 +41,16 @@ defmodule Gossip do
   def start_socket(), do: Gossip.Supervisor.start_socket()
 
   @doc """
+  The remote gossip version this was built for
+  """
+  def gossip_version(), do: "2.1.0"
+
+  @doc """
   Send a message to the Gossip network
   """
   @spec broadcast(channel_name(), Message.send()) :: :ok
   def broadcast(channel, message) do
-    maybe_send({:broadcast, channel, message})
+    maybe_send({:core, {:broadcast, channel, message}})
   end
 
   @doc """
