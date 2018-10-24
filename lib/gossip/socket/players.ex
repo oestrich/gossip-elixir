@@ -5,21 +5,21 @@ defmodule Gossip.Socket.Players do
 
   @doc false
   def handle_cast({:sign_in, player_name}, state) do
-    player_sign_in(state, player_name)
+    sign_in(state, player_name)
   end
 
   def handle_cast({:sign_out, player_name}, state) do
-    player_sign_out(state, player_name)
+    sign_out(state, player_name)
   end
 
   def handle_cast({:status}, state) do
-    players_status(state)
+    status(state)
   end
 
   @doc """
   Generate a "players/sign-in" event
   """
-  def player_sign_in(state, player_name) do
+  def sign_in(state, player_name) do
     message = %{
       "event" => "players/sign-in",
       "payload" => %{
@@ -33,7 +33,7 @@ defmodule Gossip.Socket.Players do
   @doc """
   Generate a "players/sign-out" event
   """
-  def player_sign_out(state, player_name) do
+  def sign_out(state, player_name) do
     message = %{
       "event" => "players/sign-out",
       "payload" => %{
@@ -48,7 +48,7 @@ defmodule Gossip.Socket.Players do
   @doc """
   Generate a "players/status" event
   """
-  def players_status(state) do
+  def status(state) do
     message = %{
       "event" => "players/status",
       "ref" => UUID.uuid4()

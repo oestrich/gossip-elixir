@@ -35,15 +35,6 @@ defmodule Gossip.Socket.Implementation do
     end
   end
 
-  def games_status(state) do
-    message = Poison.encode!(%{
-      "event" => "games/status",
-      "ref" => UUID.uuid4()
-    })
-
-    {:reply, message, state}
-  end
-
   def process(state, message = %{"event" => "authenticate"}) do
     case message do
       %{"status" => "success"} ->

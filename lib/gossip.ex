@@ -116,7 +116,7 @@ defmodule Gossip do
   @since "0.6.0"
   @spec request_games() :: :ok
   def request_games() do
-    maybe_send(:games_status)
+    maybe_send({:games, {:status}})
   end
 
   @doc """
