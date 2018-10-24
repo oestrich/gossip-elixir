@@ -58,7 +58,7 @@ defmodule Gossip do
   """
   @spec player_sign_in(player_name()) :: :ok
   def player_sign_in(player_name) do
-    maybe_send({:player_sign_in, player_name})
+    maybe_send({:players, {:sign_in, player_name}})
   end
 
   @doc """
@@ -66,7 +66,7 @@ defmodule Gossip do
   """
   @spec player_sign_out(player_name()) :: :ok
   def player_sign_out(player_name) do
-    maybe_send({:player_sign_out, player_name})
+    maybe_send({:players, {:sign_out, player_name}})
   end
 
   @doc """
@@ -89,7 +89,7 @@ defmodule Gossip do
   """
   @spec request_players_online() :: :ok
   def request_players_online() do
-    maybe_send(:players_status)
+    maybe_send({:players, {:status}})
   end
 
   @doc """

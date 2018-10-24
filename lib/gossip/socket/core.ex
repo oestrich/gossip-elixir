@@ -1,6 +1,6 @@
 defmodule Gossip.Socket.Core do
   @moduledoc """
-  Core flag functions
+  "channels" flag functions
   """
 
   @supports ["channels", "players", "tells", "games"]
@@ -77,13 +77,8 @@ defmodule Gossip.Socket.Core do
     end
   end
 
+  @doc false
   def handle_cast({:broadcast, channel, message}, state) do
-    case broadcast(state, channel, message) do
-      {:reply, message, state} ->
-        {:reply, {:text, Poison.encode!(message)}, state}
-
-      {:ok, state} ->
-        {:ok, state}
-    end
+    broadcast(state, channel, message)
   end
 end

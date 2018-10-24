@@ -35,37 +35,6 @@ defmodule Gossip.Socket.Implementation do
     end
   end
 
-  def player_sign_in(state, player_name) do
-    message = Poison.encode!(%{
-      "event" => "players/sign-in",
-      "payload" => %{
-        "name" => player_name,
-      },
-    })
-
-    {:reply, message, state}
-  end
-
-  def player_sign_out(state, player_name) do
-    message = Poison.encode!(%{
-      "event" => "players/sign-out",
-      "payload" => %{
-        "name" => player_name,
-      },
-    })
-
-    {:reply, message, state}
-  end
-
-  def players_status(state) do
-    message = Poison.encode!(%{
-      "event" => "players/status",
-      "ref" => UUID.uuid4()
-    })
-
-    {:reply, message, state}
-  end
-
   def games_status(state) do
     message = Poison.encode!(%{
       "event" => "games/status",
