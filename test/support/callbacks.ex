@@ -97,4 +97,65 @@ defmodule Test.Callbacks do
       end)
     end
   end
+
+  defmodule GameCallbacks do
+    @moduledoc false
+
+    @behaviour Gossip.Client.Games
+
+    def start_agent() do
+      Agent.start_link(fn -> %{} end, name: __MODULE__)
+    end
+
+    @impl true
+    def game_connect(game) do
+      start_agent()
+      Agent.update(__MODULE__, fn state ->
+        connects = Map.get(state, :connects, [])
+        connects = [game | connects]
+        Map.put(state, :connects, connects)
+      end)
+    end
+
+    @impl true
+    def game_disconnect(game) do
+      start_agent()
+      Agent.update(__MODULE__, fn state ->
+        disconnects = Map.get(state, :disconnects, [])
+        disconnects = [game | disconnects]
+        Map.put(state, :disconnects, disconnects)
+      end)
+    end
+
+    @impl true
+    def game_update(game) do
+      start_agent()
+      Agent.update(__MODULE__, fn state ->
+        game_updates = Map.get(state, :game_updates, [])
+        game_updates = [game | game_updates]
+        Map.put(state, :game_updates, game_updates)
+      end)
+    end
+
+    def connects() do
+      start_agent()
+      Agent.get(__MODULE__, fn state ->
+        Map.get(state, :connects)
+      end)
+    end
+
+    def disconnects() do
+      start_agent()
+      Agent.get(__MODULE__, fn state ->
+        Map.get(state, :disconnects)
+      end)
+    end
+
+    def game_updates() do
+      start_agent()
+      Agent.get(__MODULE__, fn state ->
+        Map.get(state, :game_updates)
+      end)
+    end
+  end
 end

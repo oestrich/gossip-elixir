@@ -15,7 +15,8 @@ if Mix.env == :test do
 
   config :gossip, :callback_modules,
     core: Test.Callbacks.CoreCallbacks,
-    players: Test.Callbacks.PlayerCallbacks
+    players: Test.Callbacks.PlayerCallbacks,
+    games: Test.Callbacks.GameCallbacks
 end
 
 if File.exists?("config/local.exs") do

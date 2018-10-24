@@ -70,7 +70,7 @@ defmodule Gossip.Socket.Players do
   Process a "players/status" event from the server
 
   If no payload is found, this was requested from a single game update
-  and should have a ref, pass along to the players module where it's waiting
+  and should have a ref, pass along to the `Players` module where it's waiting
   for the response.
   """
   def process_status(state, event = %{"payload" => payload}) do

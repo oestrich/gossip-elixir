@@ -52,9 +52,9 @@ defmodule Gossip.TestCallback do
     def game_update(_game), do: :ok
 
     @impl true
-    def game_connected(_game), do: :ok
+    def game_connect(_game), do: :ok
 
     @impl true
-    def game_disconnected(_game), do: :ok
+    def game_disconnect(_game), do: :ok
   end
 end

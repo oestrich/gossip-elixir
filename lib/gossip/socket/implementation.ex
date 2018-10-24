@@ -3,8 +3,8 @@ defmodule Gossip.Socket.Implementation do
 
   require Logger
 
-  alias Gossip.Games
   alias Gossip.Socket.Core
+  alias Gossip.Socket.Games
   alias Gossip.Socket.Players
   alias Gossip.Tells
 
@@ -49,6 +49,10 @@ defmodule Gossip.Socket.Implementation do
     Players.handle_receive(state, message)
   end
 
+  def process(state, message = %{"event" => "games/" <> _}) do
+    Games.handle_receive(state, message)
+  end
+
   def process(state, event = %{"event" => "tells/send"}) do
     Logger.debug("Received tells/send", type: :gossip)
     Tells.response(event)
@@ -67,33 +71,6 @@ defmodule Gossip.Socket.Implementation do
 
     tells_module().tell_received(from_game, from_player, to_player, message)
 
-    {:ok, state}
-  end
-
-  def process(state, event = %{"event" => "games/status", "payload" => payload}) do
-    Logger.debug("Received games/status", type: :gossip)
-    Games.response_status(event)
-    games_module().game_update(payload)
-    {:ok, state}
-  end
-
-  # This is here for failed events
-  def process(state, event = %{"event" => "games/status"}) do
-    Logger.debug("Received games/status", type: :gossip)
-    Games.response_status(event)
-    {:ok, state}
-  end
-
-  def process(state, %{"event" => "games/connect", "payload" => payload}) do
-    name = Map.get(payload, "game")
-    Games.touch_game(name)
-    games_module().game_connected(name)
-    {:ok, state}
-  end
-
-  def process(state, %{"event" => "games/disconnect", "payload" => payload}) do
-    name = Map.get(payload, "game")
-    games_module().game_disconnected(name)
     {:ok, state}
   end
 

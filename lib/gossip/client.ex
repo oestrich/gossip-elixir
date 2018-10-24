@@ -84,12 +84,12 @@ defmodule Gossip.Client do
     @doc """
     A game connected
     """
-    @callback game_connected(Gossip.game_name()) :: :ok
+    @callback game_connect(Gossip.game_name()) :: :ok
 
     @doc """
     A game disconnected
     """
-    @callback game_disconnected(Gossip.game_name()) :: :ok
+    @callback game_disconnect(Gossip.game_name()) :: :ok
   end
 
   defmodule SystemCallback do
