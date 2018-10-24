@@ -14,7 +14,7 @@ defmodule Gossip.Socket.GamesTest do
   end
 
   describe "process an incoming games/connect event" do
-    test "sends to the players callback" do
+    test "sends to the games callback" do
       payload = %{"game" => "ExVenture"}
 
       {:ok, _state} = Games.process_connect(%{}, %{"payload" => payload})
@@ -30,7 +30,7 @@ defmodule Gossip.Socket.GamesTest do
   end
 
   describe "process an incoming games/disconnect event" do
-    test "sends to the players callback" do
+    test "sends to the games callback" do
       payload = %{"game" => "ExVenture"}
 
       {:ok, _state} = Games.process_disconnect(%{}, %{"payload" => payload})
@@ -46,7 +46,7 @@ defmodule Gossip.Socket.GamesTest do
   end
 
   describe "process an incoming games/status event" do
-    test "sends to the players callback" do
+    test "sends to the games callback" do
       payload = %{"game" => "ExVenture"}
 
       {:ok, _state} = Games.process_status(%{}, %{"payload" => payload})
