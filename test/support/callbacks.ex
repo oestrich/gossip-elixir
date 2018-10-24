@@ -98,6 +98,33 @@ defmodule Test.Callbacks do
     end
   end
 
+  defmodule TellCallbacks do
+    @moduledoc false
+
+    @behaviour Gossip.Client.Tells
+
+    def start_agent() do
+      Agent.start_link(fn -> %{} end, name: __MODULE__)
+    end
+
+    @impl true
+    def tell_receive(from_game, from_player, to_player, message) do
+      start_agent()
+      Agent.update(__MODULE__, fn state ->
+        receives = Map.get(state, :receives, [])
+        receives = [{from_game, from_player, to_player, message} | receives]
+        Map.put(state, :receives, receives)
+      end)
+    end
+
+    def receives() do
+      start_agent()
+      Agent.get(__MODULE__, fn state ->
+        Map.get(state, :receives)
+      end)
+    end
+  end
+
   defmodule GameCallbacks do
     @moduledoc false
 

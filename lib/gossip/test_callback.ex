@@ -40,7 +40,7 @@ defmodule Gossip.TestCallback do
     @behaviour Gossip.Client.Tells
 
     @impl true
-    def tell_received(_from_game, _from_player, _to_player, _message), do: :ok
+    def tell_receive(_from_game, _from_player, _to_player, _message), do: :ok
   end
 
   defmodule Games do

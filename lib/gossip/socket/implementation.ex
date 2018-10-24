@@ -6,7 +6,7 @@ defmodule Gossip.Socket.Implementation do
   alias Gossip.Socket.Core
   alias Gossip.Socket.Games
   alias Gossip.Socket.Players
-  alias Gossip.Tells
+  alias Gossip.Socket.Tells
 
   def modules(), do: Application.get_env(:gossip, :callback_modules)
   def tells_module(), do: modules()[:tells]
@@ -49,29 +49,12 @@ defmodule Gossip.Socket.Implementation do
     Players.handle_receive(state, message)
   end
 
+  def process(state, message = %{"event" => "tells/" <> _}) do
+    Tells.handle_receive(state, message)
+  end
+
   def process(state, message = %{"event" => "games/" <> _}) do
     Games.handle_receive(state, message)
-  end
-
-  def process(state, event = %{"event" => "tells/send"}) do
-    Logger.debug("Received tells/send", type: :gossip)
-    Tells.response(event)
-    {:ok, state}
-  end
-
-  def process(state, event = %{"event" => "tells/receive", "payload" => payload}) do
-    Logger.debug(fn ->
-      "Received tells/receive - #{inspect(event)}"
-    end, type: :gossip)
-
-    from_game = Map.get(payload, "from_game")
-    from_player = Map.get(payload, "from_name")
-    to_player = Map.get(payload, "to_name")
-    message = Map.get(payload, "message")
-
-    tells_module().tell_received(from_game, from_player, to_player, message)
-
-    {:ok, state}
   end
 
   def process(state, event) do

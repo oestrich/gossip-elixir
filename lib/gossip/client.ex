@@ -68,7 +68,7 @@ defmodule Gossip.Client do
     @doc """
     New tell received
     """
-    @callback tell_received(Gossip.game_name(), from_player :: Gossip.player_name(), to_player :: Gossip.player_name(), Gossip.message()) :: :ok
+    @callback tell_receive(Gossip.game_name(), from_player :: Gossip.player_name(), to_player :: Gossip.player_name(), Gossip.message()) :: :ok
   end
 
   defmodule Games do

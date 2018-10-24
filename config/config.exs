@@ -16,6 +16,7 @@ if Mix.env == :test do
   config :gossip, :callback_modules,
     core: Test.Callbacks.CoreCallbacks,
     players: Test.Callbacks.PlayerCallbacks,
+    tells: Test.Callbacks.TellCallbacks,
     games: Test.Callbacks.GameCallbacks
 end
 
