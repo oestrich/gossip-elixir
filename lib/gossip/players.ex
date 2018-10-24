@@ -157,10 +157,9 @@ defmodule Gossip.Players do
     def who(state) do
       games =
         state.games
-        |> Enum.map(fn {game_name, game} ->
+        |> Enum.into(%{}, fn {game_name, game} ->
           {game_name, Map.get(game, :players, [])}
         end)
-        |> Enum.into(%{})
 
       {:ok, games}
     end

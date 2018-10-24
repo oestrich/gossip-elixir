@@ -2,6 +2,8 @@ defmodule Gossip.TestCallback do
   @moduledoc false
 
   defmodule Core do
+    @moduledoc false
+
     @behaviour Gossip.Client.Core
 
     @impl true
@@ -18,6 +20,8 @@ defmodule Gossip.TestCallback do
   end
 
   defmodule Players do
+    @moduledoc false
+
     @behaviour Gossip.Client.Players
 
     @impl true
@@ -31,6 +35,8 @@ defmodule Gossip.TestCallback do
   end
 
   defmodule Tells do
+    @moduledoc false
+
     @behaviour Gossip.Client.Tells
 
     @impl true
@@ -38,6 +44,8 @@ defmodule Gossip.TestCallback do
   end
 
   defmodule Games do
+    @moduledoc false
+
     @behaviour Gossip.Client.Games
 
     @impl true

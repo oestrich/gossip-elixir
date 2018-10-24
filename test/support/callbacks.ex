@@ -1,5 +1,9 @@
 defmodule Test.Callbacks do
+  @moduledoc false
+
   defmodule CoreCallbacks do
+    @moduledoc false
+
     @behaviour Gossip.Client.Core
 
     def start_agent() do

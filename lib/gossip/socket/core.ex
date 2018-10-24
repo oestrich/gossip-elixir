@@ -159,7 +159,9 @@ defmodule Gossip.Socket.Core do
   Process a "restart" event from the server
   """
   def process_restart(state, %{"payload" => payload}) do
-    Logger.debug("Gossip - restart incoming #{inspect(payload)}", type: :gossip)
+    Logger.debug(fn ->
+      "Gossip - restart incoming #{inspect(payload)}"
+    end, type: :gossip)
     Monitor.restart_incoming(Map.get(payload, "downtime"))
     {:ok, state}
   end
