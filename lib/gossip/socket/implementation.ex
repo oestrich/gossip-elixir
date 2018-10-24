@@ -4,9 +4,8 @@ defmodule Gossip.Socket.Implementation do
   require Logger
 
   alias Gossip.Games
-  alias Gossip.Monitor
-  alias Gossip.Message
   alias Gossip.Players
+  alias Gossip.Socket.Core
   alias Gossip.Tells
 
   def client_id(), do: Application.get_env(:gossip, :client_id)
@@ -36,55 +35,19 @@ defmodule Gossip.Socket.Implementation do
   end
 
   def process(state, message = %{"event" => "authenticate"}) do
-    case message do
-      %{"status" => "success"} ->
-        Logger.info("Authenticated against Gossip", type: :gossip)
-
-        Gossip.request_players_online()
-
-        {:ok, Map.put(state, :authenticated, true)}
-
-      %{"status" => "failure"} ->
-        Logger.info("Failed to authenticate against Gossip", type: :gossip)
-
-        :stop
-
-      _ ->
-        {:ok, state}
-    end
+    Core.handle_receive(state, message)
   end
 
-  def process(state, %{"event" => "heartbeat"}) do
-    Logger.debug("Gossip heartbeat", type: :gossip)
-
-    message = Poison.encode!(%{
-      "event" => "heartbeat",
-      "payload" => %{
-        "players" => core_module().players(),
-      },
-    })
-
-    {:reply, message, state}
+  def process(state, message = %{"event" => "heartbeat"}) do
+    Core.handle_receive(state, message)
   end
 
-  def process(state, %{"event" => "restart", "payload" => payload}) do
-    Logger.debug("Gossip - restart incoming #{inspect(payload)}", type: :gossip)
-    Monitor.restart_incoming(Map.get(payload, "downtime"))
-
-    {:ok, state}
+  def process(state, message = %{"event" => "restart"}) do
+    Core.handle_receive(state, message)
   end
 
-  def process(state, %{"event" => "channels/broadcast", "payload" => payload}) do
-    message = %Message{
-      channel: payload["channel"],
-      game: payload["game"],
-      name: payload["name"],
-      message: payload["message"],
-    }
-
-    core_module().message_broadcast(message)
-
-    {:ok, state}
+  def process(state, message = %{"event" => "channels/" <> _}) do
+    Core.handle_receive(state, message)
   end
 
   def process(state, %{"event" => "players/sign-in", "payload" => payload}) do

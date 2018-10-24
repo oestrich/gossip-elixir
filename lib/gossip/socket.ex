@@ -41,7 +41,7 @@ defmodule Gossip.Socket do
         {:ok, state}
 
       {:reply, message, state} ->
-        {:reply, {:text, message}, state}
+        {:reply, {:text, Poison.encode!(message)}, state}
 
       :stop ->
         Logger.info("Closing the Gossip websocket", type: :gossip)

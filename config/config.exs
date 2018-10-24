@@ -10,6 +10,13 @@ config :gossip, :callback_modules,
   games: Gossip.TestCallback.Core,
   system: nil
 
+if Mix.env == :test do
+  config :logger, :level, :warn
+
+  config :gossip, :callback_modules,
+    core: Test.Callbacks.CoreCallbacks
+end
+
 if File.exists?("config/local.exs") do
   import_config("local.exs")
 end

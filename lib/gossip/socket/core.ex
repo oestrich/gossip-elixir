@@ -3,6 +3,11 @@ defmodule Gossip.Socket.Core do
   "channels" flag functions
   """
 
+  require Logger
+
+  alias Gossip.Message
+  alias Gossip.Monitor
+
   @supports ["channels", "players", "tells", "games"]
 
   @doc false
@@ -80,5 +85,82 @@ defmodule Gossip.Socket.Core do
   @doc false
   def handle_cast({:broadcast, channel, message}, state) do
     broadcast(state, channel, message)
+  end
+
+  @doc false
+  def handle_receive(state, message = %{"event" => "authenticate"}) do
+    process_authenticate(state, message)
+  end
+
+  def handle_receive(state, message = %{"event" => "channels/broadcast"}) do
+    process_channel_broadcast(state, message)
+  end
+
+  def handle_receive(state, %{"event" => "heartbeat"}) do
+    process_heartbeat(state)
+  end
+
+  def handle_receive(state, message = %{"event" => "restart"}) do
+    process_restart(state, message)
+  end
+
+  @doc """
+  Process an "authenticate" event from the server
+  """
+  def process_authenticate(state, message) do
+    case message do
+      %{"status" => "success"} ->
+        Logger.info("Authenticated against Gossip", type: :gossip)
+        Gossip.request_players_online()
+        {:ok, Map.put(state, :authenticated, true)}
+
+      %{"status" => "failure"} ->
+        Logger.info("Failed to authenticate against Gossip", type: :gossip)
+        :stop
+
+      _ ->
+        {:ok, state}
+    end
+  end
+
+  @doc """
+  Process a "channels/broadcast" event from the server
+  """
+  def process_channel_broadcast(state, %{"payload" => payload}) do
+    message = %Message{
+      channel: payload["channel"],
+      game: payload["game"],
+      name: payload["name"],
+      message: payload["message"],
+    }
+
+    core_module().message_broadcast(message)
+
+    {:ok, state}
+  end
+
+  @doc """
+  Process a "heartbeat" event from the server
+  """
+  def process_heartbeat(state) do
+    Logger.debug("Gossip heartbeat", type: :gossip)
+
+    message = %{
+      "event" => "heartbeat",
+      "payload" => %{
+        "players" => core_module().players(),
+      },
+    }
+
+    {:reply, message, state}
+  end
+
+  @doc """
+  Process a "restart" event from the server
+  """
+  def process_restart(state, %{"payload" => payload}) do
+    Logger.debug("Gossip - restart incoming #{inspect(payload)}", type: :gossip)
+    Monitor.restart_incoming(Map.get(payload, "downtime"))
+    {:ok, state}
   end
 end
