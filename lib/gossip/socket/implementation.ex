@@ -8,11 +8,7 @@ defmodule Gossip.Socket.Implementation do
   alias Gossip.Socket.Core
   alias Gossip.Tells
 
-  def client_id(), do: Application.get_env(:gossip, :client_id)
-  def client_secret(), do: Application.get_env(:gossip, :client_secret)
-
   def modules(), do: Application.get_env(:gossip, :callback_modules)
-  def core_module(), do: modules()[:core]
   def players_module(), do: modules()[:players]
   def tells_module(), do: modules()[:tells]
   def games_module(), do: modules()[:games]
