@@ -1,4 +1,4 @@
-defmodule Gossip.Socket.Implementation do
+defmodule Gossip.Socket.Events do
   @moduledoc false
 
   require Logger
@@ -13,6 +13,11 @@ defmodule Gossip.Socket.Implementation do
   def games_module(), do: modules()[:games]
   def system_module(), do: modules()[:system]
 
+  @doc """
+  Parse and process an event from the server
+
+  Splits out to the sub-modules based on the kind of event
+  """
   def receive(state, message) do
     with {:ok, message} <- Poison.decode(message),
          {:ok, state} <- process(state, message) do

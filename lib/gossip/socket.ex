@@ -9,7 +9,7 @@ defmodule Gossip.Socket do
 
   alias Gossip.Monitor
   alias Gossip.Socket.Core
-  alias Gossip.Socket.Implementation
+  alias Gossip.Socket.Events
   alias Gossip.Socket.Players
   alias Gossip.Socket.Games
 
@@ -36,7 +36,7 @@ defmodule Gossip.Socket do
   end
 
   def handle_frame({:text, message}, state) do
-    case Implementation.receive(state, message) do
+    case Events.receive(state, message) do
       {:ok, state} ->
         {:ok, state}
 
