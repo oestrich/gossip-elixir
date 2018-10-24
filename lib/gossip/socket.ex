@@ -127,18 +127,22 @@ defmodule Gossip.Socket do
 
     def client_id(), do: Application.get_env(:gossip, :client_id)
     def client_secret(), do: Application.get_env(:gossip, :client_secret)
-    def callback_module(), do: Application.get_env(:gossip, :callback_module)
-    def system_module(), do: Application.get_env(:gossip, :system_module)
+
+    def core_module(), do: Application.get_env(:gossip, :callback_modules)[:core]
+    def players_module(), do: Application.get_env(:gossip, :callback_modules)[:players]
+    def tells_module(), do: Application.get_env(:gossip, :callback_modules)[:tells]
+    def games_module(), do: Application.get_env(:gossip, :callback_modules)[:games]
+    def system_module(), do: Application.get_env(:gossip, :callback_modules)[:system]
 
     def authorize(state) do
-      channels = callback_module().channels()
+      channels = core_module().channels()
 
       message = Poison.encode!(%{
         "event" => "authenticate",
         "payload" => %{
           "client_id" => client_id(),
           "client_secret" => client_secret(),
-          "user_agent" => callback_module().user_agent(),
+          "user_agent" => core_module().user_agent(),
           "supports" => ["channels", "players", "tells", "games"],
           "version" => "2.1.0",
           "channels" => channels,
@@ -250,7 +254,7 @@ defmodule Gossip.Socket do
       message = Poison.encode!(%{
         "event" => "heartbeat",
         "payload" => %{
-          "players" => callback_module().players(),
+          "players" => core_module().players(),
         },
       })
 
@@ -272,7 +276,7 @@ defmodule Gossip.Socket do
         message: payload["message"],
       }
 
-      callback_module().message_broadcast(message)
+      core_module().message_broadcast(message)
 
       {:ok, state}
     end
@@ -285,7 +289,7 @@ defmodule Gossip.Socket do
 
       Players.sign_in(game_name, player_name)
 
-      callback_module().player_sign_in(game_name, player_name)
+      players_module().player_sign_in(game_name, player_name)
 
       {:ok, state}
     end
@@ -298,7 +302,7 @@ defmodule Gossip.Socket do
 
       Players.sign_out(game_name, player_name)
 
-      callback_module().player_sign_out(game_name, player_name)
+      players_module().player_sign_out(game_name, player_name)
 
       {:ok, state}
     end
@@ -311,7 +315,7 @@ defmodule Gossip.Socket do
 
       Players.receive_status(event)
 
-      callback_module().players_status(game_name, player_names)
+      players_module().player_update(game_name, player_names)
 
       {:ok, state}
     end
@@ -339,7 +343,7 @@ defmodule Gossip.Socket do
       to_player = Map.get(payload, "to_name")
       message = Map.get(payload, "message")
 
-      callback_module().tell_received(from_game, from_player, to_player, message)
+      tells_module().tell_received(from_game, from_player, to_player, message)
 
       {:ok, state}
     end
@@ -347,7 +351,7 @@ defmodule Gossip.Socket do
     def process(state, event = %{"event" => "games/status", "payload" => payload}) do
       Logger.debug("Received games/status", type: :gossip)
       Games.response_status(event)
-      callback_module().games_status(payload)
+      games_module().game_update(payload)
       {:ok, state}
     end
 
@@ -361,13 +365,13 @@ defmodule Gossip.Socket do
     def process(state, %{"event" => "games/connect", "payload" => payload}) do
       name = Map.get(payload, "game")
       Games.touch_game(name)
-      callback_module().game_connected(name)
+      games_module().game_connected(name)
       {:ok, state}
     end
 
     def process(state, %{"event" => "games/disconnect", "payload" => payload}) do
       name = Map.get(payload, "game")
-      callback_module().game_disconnected(name)
+      games_module().game_disconnected(name)
       {:ok, state}
     end
 
