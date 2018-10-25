@@ -11,6 +11,14 @@ defmodule Gossip.Socket.GamesTest do
       assert message["event"] == "games/status"
       assert message["ref"]
     end
+
+    test "generates the event for a specific game" do
+      {:reply, message, _state} = Games.status(%{}, "remote ref", "ExVenture")
+
+      assert message["event"] == "games/status"
+      assert message["ref"]
+      assert message["payload"]["game"] == "ExVenture"
+    end
   end
 
   describe "process an incoming games/connect event" do

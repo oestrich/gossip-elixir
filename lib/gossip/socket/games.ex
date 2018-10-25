@@ -15,6 +15,10 @@ defmodule Gossip.Socket.Games do
     status(state)
   end
 
+  def handle_cast({:status, remote_ref, game_name}, state) do
+    status(state, remote_ref, game_name)
+  end
+
   @doc false
   def handle_receive(state, message = %{"event" => "games/connect"}) do
     process_connect(state, message)
@@ -33,7 +37,7 @@ defmodule Gossip.Socket.Games do
   """
   def process_connect(state, %{"payload" => payload}) do
     name = Map.get(payload, "game")
-    Gossip.Games.touch_game(name)
+    Games.Internal.touch_game(name)
     games_module().game_connect(name)
     {:ok, state}
   end
@@ -56,14 +60,14 @@ defmodule Gossip.Socket.Games do
   """
   def process_status(state, message = %{"payload" => payload}) do
     Logger.debug("Received games/status", type: :gossip)
-    Games.response_status(message)
+    Games.Internal.response(message)
     games_module().game_update(payload)
     {:ok, state}
   end
 
   def process_status(state, message) do
     Logger.debug("Received games/status", type: :gossip)
-    Games.response_status(message)
+    Games.Internal.response(message)
     {:ok, state}
   end
 
@@ -74,6 +78,23 @@ defmodule Gossip.Socket.Games do
     message = %{
       "event" => "games/status",
       "ref" => UUID.uuid4()
+    }
+
+    {:reply, message, state}
+  end
+
+  @doc """
+  Generate a "games/status" event for a specific game request
+
+  remote_ref is being tracked in the `Games` process
+  """
+  def status(state, remote_ref, game_name) do
+    message = %{
+      "event" => "games/status",
+      "ref" => remote_ref,
+      "payload" => %{
+        "game" => game_name,
+      }
     }
 
     {:reply, message, state}

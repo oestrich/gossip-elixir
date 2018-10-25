@@ -7,7 +7,7 @@ defmodule Gossip.GamesTest do
 
   describe "updates local game cache" do
     test "new game" do
-      Games.update_game(%{
+      Games.Internal.update_game(%{
         "game" => "ExVenture",
         "display_name" => "ExVenture MUD"
       })
@@ -18,12 +18,12 @@ defmodule Gossip.GamesTest do
     end
 
     test "updates the local game" do
-      Games.update_game(%{
+      Games.Internal.update_game(%{
         "game" => "ExVenture",
         "display_name" => "ExVenture MUD"
       })
 
-      Games.update_game(%{
+      Games.Internal.update_game(%{
         "game" => "ExVenture",
         "display_name" => "ExVentures MUD"
       })
@@ -35,6 +35,6 @@ defmodule Gossip.GamesTest do
   end
 
   def reset(_) do
-    Games.reset()
+    Games.Internal.reset()
   end
 end

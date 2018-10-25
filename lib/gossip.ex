@@ -15,7 +15,7 @@ defmodule Gossip do
   def start(_type, _args) do
     children = [
       {Gossip.Supervisor, []},
-      {Games, []},
+      {Games.Process, []},
       {Players, []},
       {Tells, []}
     ]
@@ -113,20 +113,18 @@ defmodule Gossip do
   Note that you will periodically recieve this callback as the Gossip client
   will refresh it's own state.
   """
-  @since "0.6.0"
-  @spec request_games() :: :ok
-  def request_games() do
+  @spec fetch_games() :: :ok
+  def fetch_games() do
     maybe_send({:games, {:status}})
   end
 
   @doc """
   Get more information about a single game
   """
-  @since "0.6.0"
-  @spec request_game(Gossip.game_name()) :: {:ok, game()} | {:error, :offline}
-  def request_game(game_name) do
+  @spec fetch_game(Gossip.game_name()) :: {:ok, game()} | {:error, :offline}
+  def fetch_game(game_name) do
     catch_offline(fn ->
-      Games.request_game(game_name)
+      Games.Internal.fetch_game(game_name)
     end)
   end
 
