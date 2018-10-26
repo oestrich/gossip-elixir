@@ -1,4 +1,10 @@
 defmodule Gossip do
+  @moduledoc """
+  Gossip client
+
+  https://github.com/oestrich/gossip
+  """
+
   use Application
 
   alias Gossip.Games
@@ -12,6 +18,7 @@ defmodule Gossip do
   @type player_name :: String.t()
   @type message :: String.t()
 
+  @doc false
   def start(_type, _args) do
     children = [
       {Gossip.Supervisor, []},
@@ -22,14 +29,6 @@ defmodule Gossip do
 
     Supervisor.start_link(children, strategy: :one_for_one)
   end
-
-  @moduledoc """
-  Gossip client
-
-  https://github.com/oestrich/gossip
-  """
-
-  @type channel :: String.t()
 
   @doc false
   def client_id(), do: Application.get_env(:gossip, :client_id)
@@ -43,6 +42,7 @@ defmodule Gossip do
   @doc """
   The remote gossip version this was built for
   """
+  @spec gossip_version() :: String.t()
   def gossip_version(), do: "2.1.0"
 
   @doc """
@@ -76,6 +76,13 @@ defmodule Gossip do
   by retrieving the full list.
   """
   def who(), do: Players.who()
+
+  @doc """
+  Get the local list of remote games.
+
+  It is periodically updated by retrieving the full list.
+  """
+  def games(), do: Games.list()
 
   @doc """
   Check Gossip for players that are online.
@@ -139,7 +146,7 @@ defmodule Gossip do
     end)
   end
 
-  def catch_offline(block) do
+  defp catch_offline(block) do
     try do
       block.()
     catch
