@@ -1,34 +1,42 @@
-defmodule Gossip.Games.Status do
+defmodule Gossip.Players.Status do
   @moduledoc """
-  Request and response for fetching a remote game
+  Request and response for fetching a remote game list
 
   Handles GenServer ref and remote refs to process a local call
   """
 
   require Logger
 
-  alias Gossip.Games.Implementation
+  alias Gossip.Players.Implementation
   alias Gossip.RemoteCall
 
   @doc """
-  Start to fetch a remote game from Gossip
+  Start to fetch a remote player list from Gossip
 
-  Sends a "games/status" event with the game as the payload
+  Sends a "players/status" event with the game as the payload
   """
   def request(state, ref, game_name) do
     RemoteCall.maybe_send(state, fn ->
-      send_to_gossip(state, ref, game_name)
+      request_players_from_gossip(state, ref, game_name)
     end)
   end
 
-  defp send_to_gossip(state, ref, game_name) do
+  defp request_players_from_gossip(state, ref, game_name) do
     remote_ref = UUID.uuid4()
 
     Logger.debug(fn ->
-      "Requesting a game - ref: #{remote_ref}"
+      "Requesting a game's players - ref: #{remote_ref}"
     end)
 
-    WebSockex.cast(Gossip.Socket, {:games, {:status, remote_ref, game_name}})
+    message = %{
+      "event" => "players/status",
+      "ref" => remote_ref,
+      "payload" => %{
+        "game" => game_name,
+      }
+    }
+
+    WebSockex.cast(Gossip.Socket, {:send, message})
 
     state = %{state | refs: Map.put(state.refs, remote_ref, ref)}
 
@@ -50,7 +58,10 @@ defmodule Gossip.Games.Status do
 
     case Map.has_key?(payload, "game") do
       true ->
-        Implementation.update_game(state, payload)
+        game_name = Map.get(payload, "game")
+        player_names = Map.get(payload, "players")
+
+        Implementation.player_list(state, game_name, player_names)
 
       false ->
         {:ok, state}

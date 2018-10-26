@@ -111,7 +111,7 @@ defmodule Gossip.Socket.Core do
     case message do
       %{"status" => "success"} ->
         Logger.info("Authenticated against Gossip", type: :gossip)
-        Gossip.request_players_online()
+        Gossip.fetch_players()
         {:ok, Map.put(state, :authenticated, true)}
 
       %{"status" => "failure"} ->

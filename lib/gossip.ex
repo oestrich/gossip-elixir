@@ -23,7 +23,7 @@ defmodule Gossip do
     children = [
       {Gossip.Supervisor, []},
       {Games.Process, []},
-      {Players, []},
+      {Players.Process, []},
       {Tells, []}
     ]
 
@@ -94,8 +94,8 @@ defmodule Gossip do
   Note that you will periodically recieve this callback as the Gossip client
   will refresh it's own state.
   """
-  @spec request_players_online() :: :ok
-  def request_players_online() do
+  @spec fetch_players() :: :ok
+  def fetch_players() do
     maybe_send({:players, {:status}})
   end
 
@@ -104,9 +104,9 @@ defmodule Gossip do
 
   Unlike the full list version, this will block until Gossip returns.
   """
-  def request_players_online(game) do
+  def fetch_players(game) do
     catch_offline(fn ->
-      Players.request_game(game)
+      Players.Internal.fetch_players(game)
     end)
   end
 

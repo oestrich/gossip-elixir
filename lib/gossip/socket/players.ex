@@ -45,7 +45,7 @@ defmodule Gossip.Socket.Players do
     game_name = Map.get(payload, "game")
     player_name = Map.get(payload, "name")
 
-    Players.sign_in(game_name, player_name)
+    Players.Internal.sign_in(game_name, player_name)
     players_module().player_sign_in(game_name, player_name)
 
     {:ok, state}
@@ -60,7 +60,7 @@ defmodule Gossip.Socket.Players do
     game_name = Map.get(payload, "game")
     player_name = Map.get(payload, "name")
 
-    Players.sign_out(game_name, player_name)
+    Players.Internal.sign_out(game_name, player_name)
     players_module().player_sign_out(game_name, player_name)
 
     {:ok, state}
@@ -79,7 +79,7 @@ defmodule Gossip.Socket.Players do
     game_name = Map.get(payload, "game")
     player_names = Map.get(payload, "players")
 
-    Players.receive_status(event)
+    Players.Internal.response(event)
     players_module().player_update(game_name, player_names)
 
     {:ok, state}
@@ -87,7 +87,7 @@ defmodule Gossip.Socket.Players do
 
   def process_status(state, event) do
     Logger.debug("Received players/status", type: :gossip)
-    Players.receive_status(event)
+    Players.Internal.response(event)
     {:ok, state}
   end
 
