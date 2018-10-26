@@ -10,8 +10,9 @@ defmodule Gossip.Socket do
   alias Gossip.Monitor
   alias Gossip.Socket.Core
   alias Gossip.Socket.Events
-  alias Gossip.Socket.Players
   alias Gossip.Socket.Games
+  alias Gossip.Socket.Players
+  alias Gossip.Socket.Tells
 
   def url() do
     Application.get_env(:gossip, :url) || "wss://gossip.haus/socket"
@@ -68,6 +69,16 @@ defmodule Gossip.Socket do
 
   def handle_cast({:players, message}, state) do
     case Players.handle_cast(message, state) do
+      {:reply, message, state} ->
+        {:reply, {:text, Poison.encode!(message)}, state}
+
+      {:ok, state} ->
+        {:ok, state}
+    end
+  end
+
+  def handle_cast({:tells, message}, state) do
+    case Tells.handle_cast(message, state) do
       {:reply, message, state} ->
         {:reply, {:text, Poison.encode!(message)}, state}
 

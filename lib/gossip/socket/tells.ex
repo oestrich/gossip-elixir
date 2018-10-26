@@ -10,6 +10,11 @@ defmodule Gossip.Socket.Tells do
   def tells_module(), do: Application.get_env(:gossip, :callback_modules)[:tells]
 
   @doc false
+  def handle_cast({:send, remote_ref, message}, state) do
+    send_message(state, remote_ref, message)
+  end
+
+  @doc false
   def handle_receive(state, message = %{"event" => "tells/receive"}) do
     process_receive(state, message)
   end
@@ -44,5 +49,26 @@ defmodule Gossip.Socket.Tells do
     Logger.debug("Received tells/send", type: :gossip)
     Tells.response(message)
     {:ok, state}
+  end
+
+  @doc """
+  Generate a "tells/send" event for a tell
+
+  remote_ref is being tracked in the `Tells` process
+  """
+  def send_message(state, remote_ref, message) do
+    message = %{
+      "event" => "tells/send",
+      "ref" => remote_ref,
+      "payload" => %{
+        "from_name" => message.sending_player,
+        "to_game" => message.game_name,
+        "to_name" => message.player_name,
+        "sent_at" => Timex.now() |> Timex.set(microsecond: {0, 0}) |> Timex.format!("{ISO:Extended:Z}"),
+        "message" => message.message
+      }
+    }
+
+    {:reply, message, state}
   end
 end

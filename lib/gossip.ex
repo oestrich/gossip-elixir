@@ -24,7 +24,7 @@ defmodule Gossip do
       {Gossip.Supervisor, []},
       {Games.Process, []},
       {Players.Process, []},
-      {Tells, []}
+      {Tells.Process, []}
     ]
 
     Supervisor.start_link(children, strategy: :one_for_one)
