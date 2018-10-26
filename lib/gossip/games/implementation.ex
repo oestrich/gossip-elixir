@@ -3,6 +3,7 @@ defmodule Gossip.Games.Implementation do
 
   require Logger
 
+  alias Gossip.Games.Internal
   alias Gossip.Games.Status
 
   @doc """
@@ -16,6 +17,8 @@ defmodule Gossip.Games.Implementation do
   Update the local cache for the game
   """
   def update_game(state, game) do
+    touch_game(state, game["game"])
+
     games = Map.put(state.games, game["game"], game)
     {:ok, %{state | games: games}}
   end
@@ -23,8 +26,8 @@ defmodule Gossip.Games.Implementation do
   @doc """
   Touch a game in the ETS cache for online tracking
   """
-  def touch_game(state, ets_key, game_name) do
-    :ets.insert(ets_key, {game_name, Timex.now()})
+  def touch_game(state, game_name) do
+    :ets.insert(Internal.ets_key(), {game_name, Timex.now()})
     {:ok, state}
   end
 

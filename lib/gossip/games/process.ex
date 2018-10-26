@@ -56,7 +56,7 @@ defmodule Gossip.Games.Process do
   end
 
   def handle_cast({:touch_game, game}, state) do
-    {:ok, state} = Implementation.touch_game(state, Internal.ets_key(), game)
+    {:ok, state} = Implementation.touch_game(state, game)
     {:noreply, state}
   end
 

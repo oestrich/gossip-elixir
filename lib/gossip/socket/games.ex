@@ -37,7 +37,6 @@ defmodule Gossip.Socket.Games do
   """
   def process_connect(state, %{"payload" => payload}) do
     name = Map.get(payload, "game")
-    Games.Internal.touch_game(name)
     games_module().game_connect(name)
     {:ok, state}
   end

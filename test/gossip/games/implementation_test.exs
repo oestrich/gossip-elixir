@@ -11,14 +11,4 @@ defmodule Gossip.Games.ImplementationTest do
       assert games == [%{"game" => "ExVenture"}]
     end
   end
-
-  describe "updating a game" do
-    test "updates the state" do
-      state = %{games: %{}}
-      game = %{"game" => "ExVenture"}
-      {:ok, state} = Implementation.update_game(state, game)
-
-      assert state.games["ExVenture"]
-    end
-  end
 end

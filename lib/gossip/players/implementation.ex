@@ -3,6 +3,7 @@ defmodule Gossip.Players.Implementation do
 
   require Logger
 
+  alias Gossip.Games
   alias Gossip.Players.Status
 
   # get a game from the map, defaulting if not present
@@ -34,6 +35,8 @@ defmodule Gossip.Players.Implementation do
       game
       |> Map.put(:players, players)
       |> touch_game()
+
+    Games.Internal.touch_game(game_name)
 
     games = Map.put(state.games, game_name, game)
     {:ok, %{state | games: games}}
