@@ -8,11 +8,6 @@ defmodule Gossip.Socket.Events do
   alias Gossip.Socket.Players
   alias Gossip.Socket.Tells
 
-  def modules(), do: Application.get_env(:gossip, :callback_modules)
-  def tells_module(), do: modules()[:tells]
-  def games_module(), do: modules()[:games]
-  def system_module(), do: modules()[:system]
-
   @doc """
   Parse and process an event from the server
 
@@ -71,7 +66,7 @@ defmodule Gossip.Socket.Events do
   end
 
   defp maybe_system_process(state, event) do
-    case system_module() do
+    case Map.get(state.modules, :system) do
       nil ->
         {:ok, state}
 

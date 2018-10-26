@@ -8,7 +8,7 @@ defmodule Gossip.Socket.Games do
   alias Gossip.Games
 
   @doc false
-  def games_module(), do: Application.get_env(:gossip, :callback_modules)[:games]
+  def games_module(state), do: state.modules.games
 
   @doc false
   def handle_cast({:status}, state) do
@@ -37,7 +37,7 @@ defmodule Gossip.Socket.Games do
   """
   def process_connect(state, %{"payload" => payload}) do
     name = Map.get(payload, "game")
-    games_module().game_connect(name)
+    games_module(state).game_connect(name)
     {:ok, state}
   end
 
@@ -46,7 +46,7 @@ defmodule Gossip.Socket.Games do
   """
   def process_disconnect(state, %{"payload" => payload}) do
     name = Map.get(payload, "game")
-    games_module().game_disconnect(name)
+    games_module(state).game_disconnect(name)
     {:ok, state}
   end
 
@@ -60,7 +60,7 @@ defmodule Gossip.Socket.Games do
   def process_status(state, message = %{"payload" => payload}) do
     Logger.debug("Received games/status", type: :gossip)
     Games.Internal.response(message)
-    games_module().game_update(payload)
+    games_module(state).game_update(payload)
     {:ok, state}
   end
 

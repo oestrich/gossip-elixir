@@ -17,17 +17,14 @@ defmodule Gossip.Socket.Core do
   def client_secret(), do: Application.get_env(:gossip, :client_secret)
 
   @doc false
-  def modules(), do: Application.get_env(:gossip, :callback_modules)
-
-  @doc false
-  def core_module(), do: modules()[:core]
+  def core_module(state), do: state.modules.core
 
   @doc """
   Determine which support flags are available based on configured callbacks
   """
-  def supports(modules \\ modules()) do
+  def supports(modules) do
     modules
-    |> Keyword.keys()
+    |> Map.keys()
     |> Enum.map(&to_string/1)
     |> Enum.map(&replace_core/1)
     |> Enum.filter(&(&1 in @supports))
@@ -41,15 +38,15 @@ defmodule Gossip.Socket.Core do
   Send an authorization event
   """
   def authenticate(state) do
-    channels = core_module().channels()
+    channels = core_module(state).channels()
 
     message = %{
       "event" => "authenticate",
       "payload" => %{
         "client_id" => client_id(),
         "client_secret" => client_secret(),
-        "user_agent" => core_module().user_agent(),
-        "supports" => supports(),
+        "user_agent" => core_module(state).user_agent(),
+        "supports" => supports(state.modules),
         "version" => Gossip.gossip_version(),
         "channels" => channels,
       },
@@ -134,7 +131,7 @@ defmodule Gossip.Socket.Core do
       message: payload["message"],
     }
 
-    core_module().message_broadcast(message)
+    core_module(state).message_broadcast(message)
 
     {:ok, state}
   end
@@ -148,7 +145,7 @@ defmodule Gossip.Socket.Core do
     message = %{
       "event" => "heartbeat",
       "payload" => %{
-        "players" => core_module().players(),
+        "players" => core_module(state).players(),
       },
     }
 

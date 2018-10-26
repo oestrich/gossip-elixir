@@ -8,7 +8,7 @@ defmodule Gossip.Socket.Players do
   alias Gossip.Players
 
   @doc false
-  def players_module(), do: Application.get_env(:gossip, :callback_modules)[:players]
+  def players_module(state), do: state.modules.players
 
   @doc false
   def handle_cast({:sign_in, player_name}, state) do
@@ -46,7 +46,7 @@ defmodule Gossip.Socket.Players do
     player_name = Map.get(payload, "name")
 
     Players.Internal.sign_in(game_name, player_name)
-    players_module().player_sign_in(game_name, player_name)
+    players_module(state).player_sign_in(game_name, player_name)
 
     {:ok, state}
   end
@@ -61,7 +61,7 @@ defmodule Gossip.Socket.Players do
     player_name = Map.get(payload, "name")
 
     Players.Internal.sign_out(game_name, player_name)
-    players_module().player_sign_out(game_name, player_name)
+    players_module(state).player_sign_out(game_name, player_name)
 
     {:ok, state}
   end
@@ -80,7 +80,7 @@ defmodule Gossip.Socket.Players do
     player_names = Map.get(payload, "players")
 
     Players.Internal.response(event)
-    players_module().player_update(game_name, player_names)
+    players_module(state).player_update(game_name, player_names)
 
     {:ok, state}
   end

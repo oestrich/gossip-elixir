@@ -14,14 +14,20 @@ defmodule Gossip.Socket do
   alias Gossip.Socket.Players
   alias Gossip.Socket.Tells
 
+  @doc false
+  def modules(), do: Application.get_env(:gossip, :callback_modules)
+
+  @doc false
   def url() do
     Application.get_env(:gossip, :url) || "wss://gossip.haus/socket"
   end
 
+  @doc false
   def start_link() do
     state = %{
       authenticated: false,
       channels: [],
+      modules: Enum.into(modules(), %{}),
     }
 
     Logger.debug("Starting socket", type: :gossip)

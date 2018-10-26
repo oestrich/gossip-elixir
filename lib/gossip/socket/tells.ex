@@ -7,7 +7,7 @@ defmodule Gossip.Socket.Tells do
 
   alias Gossip.Tells
 
-  def tells_module(), do: Application.get_env(:gossip, :callback_modules)[:tells]
+  def tells_module(state), do: state.modules.tells
 
   @doc false
   def handle_cast({:send, remote_ref, message}, state) do
@@ -34,7 +34,7 @@ defmodule Gossip.Socket.Tells do
     to_player = Map.get(payload, "to_name")
     message = Map.get(payload, "message")
 
-    tells_module().tell_receive(from_game, from_player, to_player, message)
+    tells_module(state).tell_receive(from_game, from_player, to_player, message)
 
     {:ok, state}
   end
