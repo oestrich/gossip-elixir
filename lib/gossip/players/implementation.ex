@@ -6,12 +6,17 @@ defmodule Gossip.Players.Implementation do
   alias Gossip.Games
   alias Gossip.Players.Status
 
-  # get a game from the map, defaulting if not present
-  defp get_game(state, game_name) do
+  @doc """
+  Get a game from the map, defaulting if not present
+  """
+  def get_game(state, game_name) do
     Map.get(state.games, game_name, %{name: game_name, last_seen: Timex.now()})
   end
 
-  defp touch_game(game) do
+  @doc """
+  Touch a game, updating the last seen timestamp
+  """
+  def touch_game(game) do
     Map.put(game, :last_seen, Timex.now())
   end
 
@@ -28,7 +33,11 @@ defmodule Gossip.Players.Implementation do
     {:ok, games}
   end
 
-  @doc false
+  @doc """
+  Update the player list for a game
+
+  Also touches the game for online status
+  """
   def player_list(state, game_name, players) do
     game = get_game(state, game_name)
     game =

@@ -32,6 +32,11 @@ defmodule Gossip.Tells.Send do
     {:ok, state}
   end
 
+  @doc """
+  Handle a response back from Gossip
+
+  If the remote reference is known, reply back to the waiting call.
+  """
   def response(state, event) do
     RemoteCall.maybe_reply(state, event)
   end

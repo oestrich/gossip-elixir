@@ -29,6 +29,11 @@ defmodule Gossip.Socket.Events do
     end
   end
 
+  @doc """
+  Process an incoming event after it has been parsed
+
+  "Routes" it to the appropriate submodule
+  """
   def process(state, message = %{"event" => "authenticate"}) do
     Core.handle_receive(state, message)
   end
