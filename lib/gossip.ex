@@ -1,4 +1,10 @@
 defmodule Gossip do
+  @moduledoc """
+  Gossip client
+
+  https://github.com/oestrich/gossip
+  """
+
   use Application
 
   alias Gossip.Games
@@ -12,24 +18,17 @@ defmodule Gossip do
   @type player_name :: String.t()
   @type message :: String.t()
 
+  @doc false
   def start(_type, _args) do
     children = [
       {Gossip.Supervisor, []},
-      {Games, []},
-      {Players, []},
-      {Tells, []}
+      {Games.Process, []},
+      {Players.Process, []},
+      {Tells.Process, []}
     ]
 
     Supervisor.start_link(children, strategy: :one_for_one)
   end
-
-  @moduledoc """
-  Gossip client
-
-  https://github.com/oestrich/gossip
-  """
-
-  @type channel :: String.t()
 
   @doc false
   def client_id(), do: Application.get_env(:gossip, :client_id)
@@ -41,11 +40,17 @@ defmodule Gossip do
   def start_socket(), do: Gossip.Supervisor.start_socket()
 
   @doc """
+  The remote gossip version this was built for
+  """
+  @spec gossip_version() :: String.t()
+  def gossip_version(), do: "2.1.0"
+
+  @doc """
   Send a message to the Gossip network
   """
   @spec broadcast(channel_name(), Message.send()) :: :ok
   def broadcast(channel, message) do
-    maybe_send({:broadcast, channel, message})
+    maybe_send({:core, {:broadcast, channel, message}})
   end
 
   @doc """
@@ -53,7 +58,7 @@ defmodule Gossip do
   """
   @spec player_sign_in(player_name()) :: :ok
   def player_sign_in(player_name) do
-    maybe_send({:player_sign_in, player_name})
+    maybe_send({:players, {:sign_in, player_name}})
   end
 
   @doc """
@@ -61,7 +66,7 @@ defmodule Gossip do
   """
   @spec player_sign_out(player_name()) :: :ok
   def player_sign_out(player_name) do
-    maybe_send({:player_sign_out, player_name})
+    maybe_send({:players, {:sign_out, player_name}})
   end
 
   @doc """
@@ -73,6 +78,13 @@ defmodule Gossip do
   def who(), do: Players.who()
 
   @doc """
+  Get the local list of remote games.
+
+  It is periodically updated by retrieving the full list.
+  """
+  def games(), do: Games.list()
+
+  @doc """
   Check Gossip for players that are online.
 
   This sends a `players/status` event to Gossip, sending back the current game
@@ -82,9 +94,9 @@ defmodule Gossip do
   Note that you will periodically recieve this callback as the Gossip client
   will refresh it's own state.
   """
-  @spec request_players_online() :: :ok
-  def request_players_online() do
-    maybe_send(:players_status)
+  @spec fetch_players() :: :ok
+  def fetch_players() do
+    maybe_send({:players, {:status}})
   end
 
   @doc """
@@ -92,9 +104,9 @@ defmodule Gossip do
 
   Unlike the full list version, this will block until Gossip returns.
   """
-  def request_players_online(game) do
+  def fetch_players(game) do
     catch_offline(fn ->
-      Players.request_game(game)
+      Players.Internal.fetch_players(game)
     end)
   end
 
@@ -108,20 +120,18 @@ defmodule Gossip do
   Note that you will periodically recieve this callback as the Gossip client
   will refresh it's own state.
   """
-  @since "0.6.0"
-  @spec request_games() :: :ok
-  def request_games() do
-    maybe_send(:games_status)
+  @spec fetch_games() :: :ok
+  def fetch_games() do
+    maybe_send({:games, {:status}})
   end
 
   @doc """
   Get more information about a single game
   """
-  @since "0.6.0"
-  @spec request_game(Gossip.game_name()) :: {:ok, game()} | {:error, :offline}
-  def request_game(game_name) do
+  @spec fetch_game(Gossip.game_name()) :: {:ok, game()} | {:error, :offline}
+  def fetch_game(game_name) do
     catch_offline(fn ->
-      Games.request_game(game_name)
+      Games.Internal.fetch_game(game_name)
     end)
   end
 
@@ -136,7 +146,7 @@ defmodule Gossip do
     end)
   end
 
-  def catch_offline(block) do
+  defp catch_offline(block) do
     try do
       block.()
     catch
