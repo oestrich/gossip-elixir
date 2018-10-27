@@ -19,9 +19,31 @@ end
 Set the following in your mix project's configuration. **Do not commit the client id and secret.** These should be in a `prod.secret.exs` file or similar that is ignored from your repo.
 
 ```elixir
-config :gossip, :callback_module, Game.GossipCallback
 config :gossip, :client_id, "CLIENT ID"
 config :gossip, :client_secret, "CLIENT SECRET"
+config :gossip, :callback_modules,
+  core: Callbacks.Core,
+  players: Callbacks.Players,
+  tells: Callbacks.Tells,
+  games: Callbacks.Games
 ```
 
-The `Game.GossipCallback` module should use the behaviour `Gossip.Client`.
+## Callback Modules
+
+You can opt into specific support flags on Gossip by configuring callback modules that follow the specific behaviours.
+
+### Core/Channels
+
+The `channels` flag *must* be supported and can be set up by providing a callback module that has the `Gossip.Client.Core` behaviour.
+
+### Players
+
+The `players` flag can be set up by providing a callback module that has the `Gossip.Client.Players` behaviour.
+
+### Tells
+
+The `tells` flag can be set up by providing a callback module that has the `Gossip.Client.Tells` behaviour.
+
+### Games
+
+the `games` flag can be set up by providing a callback module that has the `gossip.client.games` behaviour.
