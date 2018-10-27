@@ -32,6 +32,8 @@ config :gossip, :callback_modules,
 
 You can opt into specific support flags on Gossip by configuring callback modules that follow the specific behaviours.
 
+See a sample set of callbacks by viewing the `TestCallback` module for this client, [here](https://github.com/oestrich/gossip-elixir/blob/master/lib/gossip/test_callback.ex).
+
 ### Core/Channels
 
 The `channels` flag *must* be supported and can be set up by providing a callback module that has the `Gossip.Client.Core` behaviour.
