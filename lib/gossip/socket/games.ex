@@ -36,6 +36,7 @@ defmodule Gossip.Socket.Games do
   Process a "games/connect" event from the server
   """
   def process_connect(state, %{"payload" => payload}) do
+    Logger.debug("Game connecting", type: :gossip)
     name = Map.get(payload, "game")
     games_module(state).game_connect(name)
     {:ok, state}
@@ -45,6 +46,7 @@ defmodule Gossip.Socket.Games do
   Process a "games/disconnect" event from the server
   """
   def process_disconnect(state, %{"payload" => payload}) do
+    Logger.debug("Game disconnecting", type: :gossip)
     name = Map.get(payload, "game")
     games_module(state).game_disconnect(name)
     {:ok, state}

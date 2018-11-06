@@ -27,6 +27,8 @@ defmodule Gossip do
       {Tells.Process, []}
     ]
 
+    check_configured_modules!()
+
     Supervisor.start_link(children, strategy: :one_for_one)
   end
 
@@ -35,6 +37,15 @@ defmodule Gossip do
 
   @doc false
   def configured?(), do: client_id() != nil
+
+  @doc false
+  def check_configured_modules!() do
+    modules = Application.get_env(:gossip, :callback_modules)
+    modules = Enum.reject(modules, &(is_nil(elem(&1, 1))))
+    Enum.each(modules, fn {_key, module} ->
+      module.__info__(:functions)
+    end)
+  end
 
   @doc false
   def start_socket(), do: Gossip.Supervisor.start_socket()
