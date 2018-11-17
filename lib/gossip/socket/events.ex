@@ -62,12 +62,12 @@ defmodule Gossip.Socket.Events do
     Games.handle_receive(state, message)
   end
 
-  def process(state, event) do
+  def process(state, message) do
     Logger.debug(fn ->
-      "Received unknown event - #{inspect(event)}"
+      "Received unknown event - #{inspect(message)}"
     end)
 
-    maybe_system_process(state, event)
+    maybe_system_process(state, message)
   end
 
   defp maybe_system_process(state, event) do

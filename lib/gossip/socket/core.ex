@@ -38,6 +38,8 @@ defmodule Gossip.Socket.Core do
   Send an authorization event
   """
   def authenticate(state) do
+    Telemetry.execute([:gossip, :events, :core, :authenticating], 1, %{})
+
     channels = core_module(state).channels()
 
     message = %{
@@ -61,6 +63,8 @@ defmodule Gossip.Socket.Core do
   Broadcast a new message
   """
   def broadcast(state, channel, message) do
+    Telemetry.execute([:gossip, :events, :channels, :send], 1, %{})
+
     case channel in state.channels do
       true ->
         message = %{
@@ -86,19 +90,23 @@ defmodule Gossip.Socket.Core do
 
   @doc false
   def handle_receive(state, message = %{"event" => "authenticate"}) do
+    Telemetry.execute([:gossip, :events, :core, :authenticate], 1, %{})
     process_authenticate(state, message)
   end
 
-  def handle_receive(state, message = %{"event" => "channels/broadcast"}) do
-    process_channel_broadcast(state, message)
-  end
-
   def handle_receive(state, %{"event" => "heartbeat"}) do
+    Telemetry.execute([:gossip, :events, :core, :heartbeat], 1, %{})
     process_heartbeat(state)
   end
 
   def handle_receive(state, message = %{"event" => "restart"}) do
+    Telemetry.execute([:gossip, :events, :core, :restart], 1, %{})
     process_restart(state, message)
+  end
+
+  def handle_receive(state, message = %{"event" => "channels/broadcast"}) do
+    Telemetry.execute([:gossip, :events, :channels, :broadcast], 1, %{})
+    process_channel_broadcast(state, message)
   end
 
   @doc """

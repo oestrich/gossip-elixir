@@ -39,6 +39,7 @@ defmodule Gossip.MixProject do
       {:credo, "~> 0.10", only: [:dev, :test], runtime: false},
       {:ex_doc, ">= 0.0.0", only: :dev},
       {:poison, "~> 3.1"},
+      {:telemetry, "~> 0.2"},
       {:timex, "~> 3.1"},
       {:websockex, "~> 0.4.0"}
     ]

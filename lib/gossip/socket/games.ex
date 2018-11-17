@@ -21,14 +21,17 @@ defmodule Gossip.Socket.Games do
 
   @doc false
   def handle_receive(state, message = %{"event" => "games/connect"}) do
+    Telemetry.execute([:gossip, :events, :games, :connect], 1, %{})
     process_connect(state, message)
   end
 
   def handle_receive(state, message = %{"event" => "games/disconnect"}) do
+    Telemetry.execute([:gossip, :events, :games, :disconnect], 1, %{})
     process_disconnect(state, message)
   end
 
   def handle_receive(state, message = %{"event" => "games/status"}) do
+    Telemetry.execute([:gossip, :events, :games, :status], 1, %{})
     process_status(state, message)
   end
 
