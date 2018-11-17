@@ -53,14 +53,19 @@ the `games` flag can be set up by providing a callback module that has the `goss
 ## Telemetry Events
 
 - `[:gossip, :events, :channels, :broadcast]` - Received a `channels/broadcast` event
-- `[:gossip, :events, :channels, :send]` - Sending a `channels/send` event
-- `[:gossip, :events, :core, :authenticate]` - Received a response to `authenticate`
-- `[:gossip, :events, :core, :authenticating]` - Sending an `authenticate` event
-- `[:gossip, :events, :core, :heartbeat]` - Received a `heartbeat` event
+- `[:gossip, :events, :channels, :send, :request]` - Sending a `channels/send` event
+- `[:gossip, :events, :core, :authenticate, :request]` - Received a response to `authenticate`
+- `[:gossip, :events, :core, :authenticate, :response]` - Sending an `authenticate` event
+- `[:gossip, :events, :core, :heartbeat, :request]` - Received a `heartbeat` event
 - `[:gossip, :events, :core, :restart]` - Received a `restart` event
 - `[:gossip, :events, :games, :connect]` - Received a `games/connect` event
 - `[:gossip, :events, :games, :disconnect]` - Received a `games/disconnect` event
-- `[:gossip, :events, :games, :status]` - Received a response to `games/status`
+- `[:gossip, :events, :games, :status, :request]` - Sending a `games/status` event
+- `[:gossip, :events, :games, :status, :response]` - Received a response to `games/status`
 - `[:gossip, :events, :players, :sign_in]` - Received a `players/sign-in` event
 - `[:gossip, :events, :players, :sign_out]` - Received a `players/sign-out` event
-- `[:gossip, :events, :players, :status]` - Received a response to `players/sign-in`
+- `[:gossip, :events, :players, :status, :request]` - Sending a `players/status` event
+- `[:gossip, :events, :players, :status, :response]` - Received a response to `players/status`
+- `[:gossip, :events, :tells, :receive]` - Received a `tells/receive` event
+- `[:gossip, :events, :tells, :send, :request]` - Sending a `tells/send` event
+- `[:gossip, :events, :tells, :send, :response]` - Received a response to `tells/send`

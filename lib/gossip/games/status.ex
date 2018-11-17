@@ -24,6 +24,8 @@ defmodule Gossip.Games.Status do
   defp send_to_gossip(state, ref, game_name) do
     remote_ref = UUID.uuid4()
 
+    Telemetry.execute([:gossip, :events, :games, :status, :request], 1, %{ref: remote_ref})
+
     Logger.debug(fn ->
       "Requesting a game - ref: #{remote_ref}"
     end)

@@ -16,10 +16,12 @@ defmodule Gossip.Socket.Tells do
 
   @doc false
   def handle_receive(state, message = %{"event" => "tells/receive"}) do
+    Telemetry.execute([:gossip, :events, :tells, :receive], 1, %{ref: message["ref"]})
     process_receive(state, message)
   end
 
   def handle_receive(state, message = %{"event" => "tells/send"}) do
+    Telemetry.execute([:gossip, :events, :tells, :send, :response], 1, %{ref: message["ref"]})
     process_send(state, message)
   end
 
