@@ -20,6 +20,9 @@ defmodule Test.Callbacks do
     def players(), do: []
 
     @impl true
+    def authenticated(), do: :ok
+
+    @impl true
     def message_broadcast(message) do
       start_agent()
       Agent.update(__MODULE__, fn state ->

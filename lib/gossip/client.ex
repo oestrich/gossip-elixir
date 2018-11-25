@@ -30,6 +30,11 @@ defmodule Gossip.Client do
     @callback players() :: [Gossip.player_name()]
 
     @doc """
+    A callback to know when the socket is authenticated
+    """
+    @callback authenticated() :: :ok
+
+    @doc """
     A new message was received from Gossip on a channel
     """
     @callback message_broadcast(Gossip.message()) :: :ok

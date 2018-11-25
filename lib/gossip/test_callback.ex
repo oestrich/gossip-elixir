@@ -16,6 +16,9 @@ defmodule Gossip.TestCallback do
     def players(), do: []
 
     @impl true
+    def authenticated(), do: :ok
+
+    @impl true
     def message_broadcast(_message), do: :ok
   end
 

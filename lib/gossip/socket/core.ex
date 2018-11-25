@@ -117,6 +117,7 @@ defmodule Gossip.Socket.Core do
       %{"status" => "success"} ->
         Logger.info("Authenticated against Gossip", type: :gossip)
         Gossip.fetch_players()
+        core_module(state).authenticated()
         {:ok, Map.put(state, :authenticated, true)}
 
       %{"status" => "failure"} ->
