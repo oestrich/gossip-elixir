@@ -118,6 +118,7 @@ defmodule Gossip.Socket.Core do
         Logger.info("Authenticated against Gossip", type: :gossip)
         Gossip.fetch_players()
         core_module(state).authenticated()
+        {:ok, state} = maybe_system_authenticated(state)
         {:ok, Map.put(state, :authenticated, true)}
 
       %{"status" => "failure"} ->
@@ -168,5 +169,15 @@ defmodule Gossip.Socket.Core do
     Logger.info("Gossip - restart incoming", type: :gossip)
     Monitor.restart_incoming(Map.get(payload, "downtime"))
     {:ok, state}
+  end
+
+  defp maybe_system_authenticated(state) do
+    case Map.get(state.modules, :system) do
+      nil ->
+        {:ok, state}
+
+      system_module ->
+        system_module.authenticated(state)
+    end
   end
 end

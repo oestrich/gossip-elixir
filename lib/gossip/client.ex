@@ -105,6 +105,8 @@ defmodule Gossip.Client do
     @type state :: map()
     @type event :: map()
 
-    @callback process(state(), event()) :: :ok
+    @callback authenticated(state()) :: {:ok, state()}
+
+    @callback process(state(), event()) :: {:ok, state()}
   end
 end
