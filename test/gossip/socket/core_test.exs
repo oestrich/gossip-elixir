@@ -38,6 +38,26 @@ defmodule Gossip.Socket.CoreTest do
     end
   end
 
+  describe "subscribe to a new channel" do
+    test "creates the channels/subscribe event", %{state: state} do
+      {:reply, message, state} = Core.subscribe(state, "gossip")
+
+      assert message["event"] == "channels/subscribe"
+      assert "gossip" in state.channels
+    end
+  end
+
+  describe "unsubscribe to a channel" do
+    test "creates the channels/unsubscribe event", %{state: state} do
+      state = %{state | channels: ["gossip"]}
+
+      {:reply, message, state} = Core.unsubscribe(state, "gossip")
+
+      assert message["event"] == "channels/unsubscribe"
+      refute "gossip" in state.channels
+    end
+  end
+
   describe "broadcast a message on a channel" do
     test "creates the channels/send event", %{state: state} do
       state = Map.put(state, :channels, ["gossip"])
@@ -124,6 +144,6 @@ defmodule Gossip.Socket.CoreTest do
   end
 
   def with_state(_) do
-    %{state: %{modules: %{core: Test.Callbacks.CoreCallbacks}}}
+    %{state: %{channels: [], modules: %{core: Test.Callbacks.CoreCallbacks}}}
   end
 end

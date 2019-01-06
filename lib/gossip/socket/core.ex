@@ -8,7 +8,7 @@ defmodule Gossip.Socket.Core do
   alias Gossip.Message
   alias Gossip.Monitor
 
-  @supports ["channels", "players", "tells", "games"]
+  @supports ["channels", "games", "players", "tells"]
 
   @doc false
   def client_id(), do: Application.get_env(:gossip, :client_id)
@@ -60,6 +60,44 @@ defmodule Gossip.Socket.Core do
   end
 
   @doc """
+  Subscribe to a new channel
+  """
+  def subscribe(state, channel) do
+    Telemetry.execute([:gossip, :events, :channels, :subscribe, :request], 1, %{})
+
+    message = %{
+      "event" => "channels/subscribe",
+      "payload" => %{
+        "channel" => channel,
+      },
+    }
+
+    channels = Enum.uniq([channel | state.channels])
+    state = %{state | channels: channels}
+
+    {:reply, message, state}
+  end
+
+  @doc """
+  Unsubscribe to a new channel
+  """
+  def unsubscribe(state, channel) do
+    Telemetry.execute([:gossip, :events, :channels, :unsubscribe, :request], 1, %{})
+
+    message = %{
+      "event" => "channels/unsubscribe",
+      "payload" => %{
+        "channel" => channel,
+      },
+    }
+
+    channels = Enum.reject(state.channels, &(&1 == channel))
+    state = %{state | channels: channels}
+
+    {:reply, message, state}
+  end
+
+  @doc """
   Broadcast a new message
   """
   def broadcast(state, channel, message) do
@@ -86,6 +124,14 @@ defmodule Gossip.Socket.Core do
   @doc false
   def handle_cast({:broadcast, channel, message}, state) do
     broadcast(state, channel, message)
+  end
+
+  def handle_cast({:subscribe, channel}, state) do
+    subscribe(state, channel)
+  end
+
+  def handle_cast({:unsubscribe, channel}, state) do
+    unsubscribe(state, channel)
   end
 
   @doc false

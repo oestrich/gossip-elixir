@@ -57,6 +57,20 @@ defmodule Gossip do
   def gossip_version(), do: "2.1.0"
 
   @doc """
+  Subscribe to a new channel
+  """
+  def subscribe(channel) do
+    maybe_send({:core, {:subscribe, channel}})
+  end
+
+  @doc """
+  Unsubscribe to a channel
+  """
+  def unsubscribe(channel) do
+    maybe_send({:core, {:unsubscribe, channel}})
+  end
+
+  @doc """
   Send a message to the Gossip network
   """
   @spec broadcast(channel_name(), Message.send()) :: :ok
