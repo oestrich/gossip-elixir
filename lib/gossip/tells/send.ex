@@ -21,7 +21,7 @@ defmodule Gossip.Tells.Send do
   defp send_to_gossip(state, ref, message) do
     remote_ref = UUID.uuid4()
 
-    Telemetry.execute([:gossip, :events, :tells, :send, :request], 1, %{ref: remote_ref})
+    :telemetry.execute([:gossip, :events, :tells, :send, :request], 1, %{ref: remote_ref})
 
     Logger.debug(fn ->
       "Sending tell - ref: #{remote_ref}"
