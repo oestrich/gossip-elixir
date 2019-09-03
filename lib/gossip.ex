@@ -114,7 +114,7 @@ defmodule Gossip do
 
   This sends a `players/status` event to Gossip, sending back the current game
   presence on the server. You will receive the updates via the callback
-  `Gossip.Client.players_status/2`.
+  `c:Gossip.Client.Players.player_update/2`.
 
   Note that you will periodically recieve this callback as the Gossip client
   will refresh it's own state.
@@ -140,7 +140,7 @@ defmodule Gossip do
 
   This sends a `games/status` event to Gossip, sending back an event per connected
   game to gossip. You will receive the updates via the callback
-  `Gossip.Client.games_status/1`.
+  `c:Gossip.Client.Games.game_update/1`.
 
   Note that you will periodically recieve this callback as the Gossip client
   will refresh it's own state.
