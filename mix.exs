@@ -46,7 +46,7 @@ defmodule Gossip.MixProject do
   end
 
   def description() do
-    "Client for the Gossip MUD network"
+    "Client for the Grapevine MUD network"
   end
 
   def package() do
