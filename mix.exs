@@ -15,7 +15,7 @@ defmodule Gossip.MixProject do
       ],
       description: description(),
       package: package(),
-      homepage_url: "https://gossip.haus/",
+      homepage_url: "https://grapevine.haus/",
       source_url: "https://github.com/oestrich/gossip-elixir"
     ]
   end

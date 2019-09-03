@@ -19,7 +19,7 @@ defmodule Gossip.Socket do
 
   @doc false
   def url() do
-    Application.get_env(:gossip, :url) || "wss://gossip.haus/socket"
+    Application.get_env(:gossip, :url) || "wss://grapevine.haus/socket"
   end
 
   @doc false

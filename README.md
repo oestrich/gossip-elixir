@@ -1,6 +1,6 @@
 # Gossip
 
-A client for connecting to the Gossip MUD chat network. See [https://gossip.haus/docs](https://gossip.haus/docs) for more information.
+A client for connecting to the Gossip MUD chat network. See [https://grapevine.haus/docs](https://grapevine.haus/docs) for more information.
 
 ## Installation
 
