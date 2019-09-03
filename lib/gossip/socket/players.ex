@@ -25,17 +25,17 @@ defmodule Gossip.Socket.Players do
 
   @doc false
   def handle_receive(state, message = %{"event" => "players/sign-in"}) do
-    :telemetry.execute([:gossip, :events, :players, :sign_in], 1, %{ref: message["ref"]})
+    :telemetry.execute([:gossip, :events, :players, :sign_in], %{count: 1}, %{ref: message["ref"]})
     process_sign_in(state, message)
   end
 
   def handle_receive(state, message = %{"event" => "players/sign-out"}) do
-    :telemetry.execute([:gossip, :events, :players, :sign_out], 1, %{ref: message["ref"]})
+    :telemetry.execute([:gossip, :events, :players, :sign_out], %{count: 1}, %{ref: message["ref"]})
     process_sign_out(state, message)
   end
 
   def handle_receive(state, message = %{"event" => "players/status"}) do
-    :telemetry.execute([:gossip, :events, :players, :status, :response], 1, %{ref: message["ref"]})
+    :telemetry.execute([:gossip, :events, :players, :status, :response], %{count: 1}, %{ref: message["ref"]})
     process_status(state, message)
   end
 

@@ -38,7 +38,7 @@ defmodule Gossip.Socket.Core do
   Send an authorization event
   """
   def authenticate(state) do
-    :telemetry.execute([:gossip, :events, :core, :authenticate, :request], 1)
+    :telemetry.execute([:gossip, :events, :core, :authenticate, :request], %{count: 1})
 
     channels = core_module(state).channels()
 
@@ -63,7 +63,7 @@ defmodule Gossip.Socket.Core do
   Subscribe to a new channel
   """
   def subscribe(state, channel) do
-    :telemetry.execute([:gossip, :events, :channels, :subscribe, :request], 1)
+    :telemetry.execute([:gossip, :events, :channels, :subscribe, :request], %{count: 1})
 
     message = %{
       "event" => "channels/subscribe",
@@ -82,7 +82,7 @@ defmodule Gossip.Socket.Core do
   Unsubscribe to a new channel
   """
   def unsubscribe(state, channel) do
-    :telemetry.execute([:gossip, :events, :channels, :unsubscribe, :request], 1)
+    :telemetry.execute([:gossip, :events, :channels, :unsubscribe, :request], %{count: 1})
 
     message = %{
       "event" => "channels/unsubscribe",
@@ -101,7 +101,7 @@ defmodule Gossip.Socket.Core do
   Broadcast a new message
   """
   def broadcast(state, channel, message) do
-    :telemetry.execute([:gossip, :events, :channels, :send, :request], 1)
+    :telemetry.execute([:gossip, :events, :channels, :send, :request], %{count: 1})
 
     case channel in state.channels do
       true ->
@@ -136,22 +136,22 @@ defmodule Gossip.Socket.Core do
 
   @doc false
   def handle_receive(state, message = %{"event" => "authenticate"}) do
-    :telemetry.execute([:gossip, :events, :core, :authenticate, :response], 1, %{ref: message["ref"]})
+    :telemetry.execute([:gossip, :events, :core, :authenticate, :response], %{count: 1}, %{ref: message["ref"]})
     process_authenticate(state, message)
   end
 
   def handle_receive(state, %{"event" => "heartbeat"}) do
-    :telemetry.execute([:gossip, :events, :core, :heartbeat, :request], 1)
+    :telemetry.execute([:gossip, :events, :core, :heartbeat, :request], %{count: 1})
     process_heartbeat(state)
   end
 
   def handle_receive(state, message = %{"event" => "restart"}) do
-    :telemetry.execute([:gossip, :events, :core, :restart], 1, %{ref: message["ref"]})
+    :telemetry.execute([:gossip, :events, :core, :restart], %{count: 1}, %{ref: message["ref"]})
     process_restart(state, message)
   end
 
   def handle_receive(state, message = %{"event" => "channels/broadcast"}) do
-    :telemetry.execute([:gossip, :events, :channels, :broadcast], 1, %{ref: message["ref"]})
+    :telemetry.execute([:gossip, :events, :channels, :broadcast], %{count: 1}, %{ref: message["ref"]})
     process_channel_broadcast(state, message)
   end
 

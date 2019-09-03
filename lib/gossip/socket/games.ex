@@ -21,17 +21,17 @@ defmodule Gossip.Socket.Games do
 
   @doc false
   def handle_receive(state, message = %{"event" => "games/connect"}) do
-    :telemetry.execute([:gossip, :events, :games, :connect], 1, %{ref: message["ref"]})
+    :telemetry.execute([:gossip, :events, :games, :connect], %{count: 1}, %{ref: message["ref"]})
     process_connect(state, message)
   end
 
   def handle_receive(state, message = %{"event" => "games/disconnect"}) do
-    :telemetry.execute([:gossip, :events, :games, :disconnect], 1, %{ref: message["ref"]})
+    :telemetry.execute([:gossip, :events, :games, :disconnect], %{count: 1}, %{ref: message["ref"]})
     process_disconnect(state, message)
   end
 
   def handle_receive(state, message = %{"event" => "games/status"}) do
-    :telemetry.execute([:gossip, :events, :games, :status, :response], 1, %{ref: message["ref"]})
+    :telemetry.execute([:gossip, :events, :games, :status, :response], %{count: 1}, %{ref: message["ref"]})
     process_status(state, message)
   end
 
